@@ -5,11 +5,11 @@
 # arbitrary actions.  The main intent is to set up various PKG_*
 # variables used to configure and generate the package.
 
-PKG_NAME="stackato-vcap-uaa"
+PKG_NAME="stackato-vcap-uaa-ng"
 PKG_VERSION="0.1"
 #PKG_VERSION_COUNTER="auto"
 PKG_ARCH="all"
-PKG_DESCR_SHORT="stackato-vcap-uaa"
+PKG_DESCR_SHORT="stackato-vcap-uaa-ng"
 PKG_DESCR_LONG="Packaged distribution of uaa."
 PKG_GITDESCRIBE=""
 PKG_DEPENDS="stackato-rubies, maven"
