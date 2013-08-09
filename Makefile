@@ -25,7 +25,7 @@ INSTDIR=$(DESTDIR)$(prefix)$(DIRNAME)
 
 # Don't exclude .git because maven build for uaa needs it. 
 
-RSYNC_EXCLUDE=--exclude=Makefile --exclude=.stackato-pkg --exclude=debian --exclude=etc
+RSYNC_EXCLUDE=--exclude=/Makefile --exclude=/.stackato-pkg --exclude=/debian --exclude=/etc
 
 all:
 	@ true
