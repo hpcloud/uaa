@@ -1,0 +1,12 @@
+
+[program:uaa]
+directory=/s/code/uaa
+command=mvn tomcat:run
+priority=15
+redirect_stderr=true
+stdout_logfile=/s/logs/uaa.log
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=3
+autostart=false
+environment=CLOUD_FOUNDRY_CONFIG_PATH=/home/stackato/stackato/code/uaa/config/
+
