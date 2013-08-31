@@ -1,4 +1,4 @@
-# Package configuration for stackato-vcap-uaa
+# Package configuration for stackato-uaa-ng
 
 # Values here will override environment variables and will be overridden
 # by command options.  This is a shell file so you can use it to perform

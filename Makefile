@@ -1,5 +1,5 @@
 #
-# Makefile for stackato-vcap-uaa-ng
+# Makefile for stackato-uaa-ng
 #
 # Used solely by packaging systems.
 # Must support targets "all", "install", "uninstall".
@@ -12,7 +12,7 @@
 # is not intended to be relocatable.
 #
 
-NAME=stackato-vcap-uaa-ng
+NAME=stackato-uaa-ng
 
 INSTALLHOME=/home/stackato
 INSTALLBASE=$(INSTALLHOME)/stackato
