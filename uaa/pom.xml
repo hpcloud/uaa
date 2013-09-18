@@ -29,6 +29,16 @@
 
 	<profiles>
 		<profile>
+			<id>aok</id>
+			<properties>
+				<CLOUD_FOUNDRY_CONFIG_PATH>${project.basedir}/src/test/resources/test/profiles/aok</CLOUD_FOUNDRY_CONFIG_PATH>
+				<test-includes>**/integration/VmcAuthenticationTests.java</test-includes>
+				<test-includes>**/integration/ImplicitTokenGrantIntegrationTests.java</test-includes>
+				<!-- <test-includes>**/integration/AuthorizationCodeGrantIntegrationTests.java</test-includes> -->
+				<!-- <test-includes>**/integration/LoginInfoEndpointIntegrationTests.java</test-includes> -->
+			</properties>
+		</profile>
+		<profile>
 			<id>devuaa</id>
 			<properties>
 				<CLOUD_FOUNDRY_CONFIG_PATH>${project.basedir}/src/test/resources/test/profiles/devuaa</CLOUD_FOUNDRY_CONFIG_PATH>
@@ -152,7 +162,7 @@
 					<configuration>
 						<skip>${skipTests}</skip>
 						<includes>
-							<include>**/*Tests.java</include>
+							<include>${test-includes}</include>
 						</includes>
 						<excludes>
 							<exclude>**/Abstract*.java</exclude>
