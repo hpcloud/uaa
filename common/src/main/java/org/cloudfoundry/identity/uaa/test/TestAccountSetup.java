@@ -169,8 +169,8 @@ public class TestAccountSetup extends TestWatchman {
 
 			UaaUser user = testAccounts.getUser();
 			@SuppressWarnings("rawtypes")
-			ResponseEntity<Map> results = client.getForEntity(serverRunning.getUserUri() + "?filter=userName eq '"
-					+ user.getUsername() + "'", Map.class);
+			ResponseEntity<Map> results = client.getForEntity(serverRunning.getUserUri() + "?filter=userName eq \""
+					+ user.getUsername() + "\"", Map.class);
 			assertEquals(HttpStatus.OK, results.getStatusCode());
 			@SuppressWarnings("unchecked")
 			List<Map<String, ?>> resources = (List<Map<String, ?>>) results.getBody().get("resources");
