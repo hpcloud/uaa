@@ -16,6 +16,12 @@ oauth:
       secret: 'changeme'
       authorized-grant-types: client_credentials
       authorities: uaa.resource,cloud_controller.admin
+    cloud_controller:
+      override: true
+      secret: cloudcontrollersecret
+      authorized-grant-types: client_credentials
+      authorities: scim.read,scim.write
+      scope: uaa.none
 jwt:
   token:
     signing-key: 'tokensecret'
