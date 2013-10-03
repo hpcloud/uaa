@@ -26,12 +26,15 @@
 <body id="micro">
 	<div class="content">
 		<article class="container">
+<!--
 			<p>Sign in with your CloudFoundry credentials.</p>
+-->
+<p>Sign in with your Stackato credentials (username and password).</p>
 			<form id="loginForm" name="loginForm"
 				action="<c:url value="/login.do"/>" method="POST" novalidate>
 				<div>
 					<c:if test="${not empty param.error}">
-						<div class="flash">Sorry, we couldn't verify your email and
+						<div class="flash">Sorry, we couldn't verify your username and
 							password.</div>
 					</c:if>
 					<c:forEach items="${prompts}" var="prompt">
@@ -44,6 +47,8 @@
 		</article>
 		<div class="message">
 			<p>
+This page serves as the stub page for UAA access until AOK is properly integrated.
+<!--
 				If you are reading this you are probably in the wrong place because
 				the UAA does not support a branded UI out of the box. To login to
 				<code>cloudfoundry.com</code>
@@ -51,14 +56,17 @@
 				re-directed here by another application, please contact the owner of
 				that application and tell them to use the Login Server as UI entry
 				point.
+-->
 			</p>
 		</div>
 	</div>
 	<div class="footer"
 		title="Version: ${app.version}, Commit: ${commit_id}, Timestamp: ${timestamp}">
+<!--
 		Copyright &copy;
 		<fmt:formatDate value="<%=new java.util.Date()%>" pattern="yyyy" />
 		VMware, Inc. All rights reserved.
+-->
 	</div>
 </body>
 </html>
