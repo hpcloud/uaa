@@ -30,4 +30,7 @@ scim:
   userids_enabled: false
   user.override: true
   users:
-    - admin|password|scim.write,scim.read,openid,cloud_controller.admin
+database:
+  username: postgres
+  password: changeme
+spring_profiles: postgresql
