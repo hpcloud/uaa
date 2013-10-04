@@ -95,7 +95,7 @@
     <div class="flash">Sorry, we couldn't verify your username and password.</div>
     </c:if>
     <c:forEach items="${prompts}" var="prompt">
-    <input class="form-control" autofocus="" id='${prompt.key==null ? prompt.name : prompt.key}' type='${prompt.key==null ? prompt.type : prompt.value[0]}' name='${prompt.key==null ? prompt.name : prompt.key}' placeholder='${prompt.key==null ? prompt.text : prompt.value[1]}' />
+    <input class="form-control" autofocus="" id='${prompt.key==null ? prompt.name : prompt.key}' type='${prompt.key==null ? prompt.type : prompt.value[0]}' name='${prompt.key==null ? prompt.name : prompt.key}' placeholder='${prompt.key==null ? (prompt.text == "Email" ? "Username" : prompt.text) : (prompt.value[1] == "Email" ? "Username" : prompt.value[1])}' />
     </c:forEach>
 
     <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
