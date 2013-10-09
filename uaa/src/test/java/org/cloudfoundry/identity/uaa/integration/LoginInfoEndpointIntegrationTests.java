@@ -59,7 +59,9 @@ public class LoginInfoEndpointIntegrationTests {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
 		ResponseEntity<String> response = serverRunning.getForString("/login", headers );
-		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(HttpStatus.FOUND, response.getStatusCode());
+		String location = response.getHeaders().getLocation().toString();
+		response = serverRunning.getForString(location, headers );
 		String body = response.getBody();
 		// System.err.println(body);
 		assertNotNull(body);

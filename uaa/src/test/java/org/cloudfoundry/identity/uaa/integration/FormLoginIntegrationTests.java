@@ -53,7 +53,7 @@ public class FormLoginIntegrationTests {
 		assertEquals(HttpStatus.FOUND, result.getStatusCode());
 
 		location = result.getHeaders().getLocation().toString();
-		assertTrue(location.contains("/login"));
+		assertTrue("Wrong location: " + location, location.contains("/auth/identity"));
 	}
 
 	public void testUnauthenticatedHomeRedirect() throws Exception {
@@ -67,7 +67,7 @@ public class FormLoginIntegrationTests {
 		assertEquals(HttpStatus.FOUND, result.getStatusCode());
 
 		location = result.getHeaders().getLocation().toString();
-		assertTrue(location.contains("/login"));
+		assertTrue(location.contains("/auth/identity"));
 	}
 
 	@Test

@@ -236,6 +236,9 @@ public class TestAccountSetup extends TestWatchman {
 		if (user.getUsername() != null) {
 			result.put("userName", user.getUsername());
 		}
+		if (user.getPassword() != null) {
+			result.put("password", user.getPassword());
+		}
 		String email = user.getEmail();
 		if (email != null) {
 			@SuppressWarnings("unchecked")
