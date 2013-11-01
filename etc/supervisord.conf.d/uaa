@@ -1,7 +1,7 @@
 
 [program:uaa]
 directory=/s/code/uaa
-command=#mvn tomcat:run
+command=mvn tomcat:run
 priority=15
 redirect_stderr=true
 stdout_logfile=/s/logs/uaa.log

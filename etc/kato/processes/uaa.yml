@@ -1,4 +1,4 @@
 ---
 name: uaa
 roles:
-  - primary
+  - none
