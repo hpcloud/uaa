@@ -118,6 +118,14 @@
 		<access-denied-handler ref="oauthAccessDeniedHandler" />
 	</http>
 
+	<http request-matcher-ref="groupsPatchRequestMatcher" create-session="stateless" authentication-manager-ref="emptyAuthenticationManager"
+		entry-point-ref="oauthAuthenticationEntryPoint" access-decision-manager-ref="groupAccessDecisionManager"
+		xmlns="http://www.springframework.org/schema/security">
+		<intercept-url pattern="/**" access="scope=scim.write,scope=groups.update,memberScope=writer" method="PATCH" />
+		<custom-filter ref="scimResourceAuthenticationFilter" position="PRE_AUTH_FILTER" />
+		<access-denied-handler ref="oauthAccessDeniedHandler" />
+	</http>
+
 	<http request-matcher-ref="groupsReadRequestMatcher" create-session="stateless" authentication-manager-ref="emptyAuthenticationManager"
 		entry-point-ref="oauthAuthenticationEntryPoint" access-decision-manager-ref="groupAccessDecisionManager"
 		xmlns="http://www.springframework.org/schema/security">
@@ -129,6 +137,16 @@
 	<bean id="groupsUpdateRequestMatcher" class="org.cloudfoundry.identity.uaa.security.web.UaaRequestMatcher">
 		<constructor-arg value="/Groups" />
 		<property name="method" value="PUT" />
+		<property name="accept">
+			<list>
+				<value>application/json</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="groupsPatchRequestMatcher" class="org.cloudfoundry.identity.uaa.security.web.UaaRequestMatcher">
+		<constructor-arg value="/Groups" />
+		<property name="method" value="PATCH" />
 		<property name="accept">
 			<list>
 				<value>application/json</value>
