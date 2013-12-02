@@ -27,6 +27,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -46,6 +47,7 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 /**
+ * XXX aocole Ignoring all tests-- not using login server in AOK
  * Integration test to verify that the Login Server authentication channel is open and working.
  * 
  * @author Dave Syer
@@ -88,7 +90,7 @@ public class LoginServerSecurityIntegrationTests {
 	public void setUpUserAccounts() {
 
 		// If running against vcap we don't want to run these tests because they create new user accounts
-		Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
+		// Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
 
 		RestOperations client = serverRunning.getRestTemplate();
 
@@ -118,6 +120,7 @@ public class LoginServerSecurityIntegrationTests {
 	}
 
 	@Test
+	@Ignore
 	@OAuth2ContextConfiguration(LoginClient.class)
 	public void testLoginServerCanAuthenticateUserForVmc() throws Exception {
 		ImplicitResourceDetails resource = testAccounts.getDefaultImplicitResource();
@@ -134,6 +137,7 @@ public class LoginServerSecurityIntegrationTests {
 	}
 
 	@Test
+	@Ignore
 	@OAuth2ContextConfiguration(LoginClient.class)
 	public void testLoginServerCanAuthenticateUserForAuthorizationCode() throws Exception {
 		params.set("client_id", testAccounts.getDefaultAuthorizationCodeResource().getClientId());
@@ -148,6 +152,7 @@ public class LoginServerSecurityIntegrationTests {
 	}
 
 	@Test
+	@Ignore
 	@OAuth2ContextConfiguration(LoginClient.class)
 	public void testMissingUserInfoIsError() throws Exception {
 		params.set("client_id", testAccounts.getDefaultImplicitResource().getClientId());
@@ -162,6 +167,7 @@ public class LoginServerSecurityIntegrationTests {
 	}
 
 	@Test
+	@Ignore
 	@OAuth2ContextConfiguration(LoginClient.class)
 	public void testMissingUsernameIsError() throws Exception {
 		((RestTemplate) serverRunning.getRestTemplate())
@@ -180,6 +186,7 @@ public class LoginServerSecurityIntegrationTests {
 	}
 
 	@Test
+	@Ignore
 	@OAuth2ContextConfiguration(LoginClient.class)
 	public void testWrongUsernameIsError() throws Exception {
 		((RestTemplate) serverRunning.getRestTemplate())

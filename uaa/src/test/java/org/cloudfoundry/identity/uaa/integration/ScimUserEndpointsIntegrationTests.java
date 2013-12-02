@@ -77,7 +77,7 @@ public class ScimUserEndpointsIntegrationTests {
 	@Before
 	public void createRestTemplate() throws Exception {
 
-		Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
+		// Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
 
 		client = serverRunning.getRestTemplate();
 
@@ -362,15 +362,24 @@ public class ScimUserEndpointsIntegrationTests {
 		Map results = response.getBody();
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertTrue("There should be more than zero users", (Integer) results.get("totalResults") > 0);
-		assertTrue("There should be some resources", ((Collection<?>) results.get("resources")).size() > 0);
+		int size = ((Collection<?>) results.get("resources")).size();
+		assertTrue("There should be some resources", size > 0);
+		int lastUserIndex = size - 1;
+		// Using last user here instead of first so that tests pass even with a dirty db
 		@SuppressWarnings("rawtypes")
-		Map firstUser = (Map) ((List) results.get("resources")).get(0);
+		Map lastUser = (Map) ((List) results.get("resources")).get(lastUserIndex);
 		// [cfid-111] All attributes should be returned if no attributes supplied in query
-		assertTrue(firstUser.containsKey("id"));
-		assertTrue(firstUser.containsKey("userName"));
-		assertTrue(firstUser.containsKey("name"));
-		assertTrue(firstUser.containsKey("emails"));
-		assertTrue(firstUser.containsKey("groups"));
+		// for (Object name: lastUser.keySet()){
+		// 	System.out.println("User found: ");
+		// 	String key = name.toString();
+		// 	String value = lastUser.get(name).toString();
+		// 	System.out.println(key + " " + value);
+		// }
+		assertTrue(lastUser.containsKey("id"));
+		assertTrue(lastUser.containsKey("userName"));
+		assertTrue(lastUser.containsKey("name"));
+		assertTrue(lastUser.containsKey("emails"));
+		assertTrue(lastUser.containsKey("groups"));
 	}
 
 	@Test

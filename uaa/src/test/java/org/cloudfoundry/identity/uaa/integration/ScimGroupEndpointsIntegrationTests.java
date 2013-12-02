@@ -81,7 +81,7 @@ public class ScimGroupEndpointsIntegrationTests {
 	@Before
 	public void createRestTemplate() throws Exception {
 
-		Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
+		// Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
 
 		client = serverRunning.getRestTemplate();
 
@@ -231,7 +231,7 @@ public class ScimGroupEndpointsIntegrationTests {
 		// check that the group was not created
 		@SuppressWarnings("unchecked")
 		Map<String, String> g2 = client.getForObject(
-				serverRunning.getUrl(groupEndpoint + "?filter=displayName eq '{name}'"), Map.class, CFID);
+				serverRunning.getUrl(groupEndpoint + "?filter=displayName eq \"{name}\""), Map.class, CFID);
 		assertTrue(g2.containsKey("totalResults"));
 		assertEquals(0, g2.get("totalResults"));
 	}
@@ -272,7 +272,7 @@ public class ScimGroupEndpointsIntegrationTests {
 		// check that the group does not exist anymore
 		@SuppressWarnings("unchecked")
 		Map<String, Object> g2 = client.getForObject(
-				serverRunning.getUrl(groupEndpoint + "?filter=displayName eq '{name}'"), Map.class, DELETE_ME);
+				serverRunning.getUrl(groupEndpoint + "?filter=displayName eq \"{name}\""), Map.class, DELETE_ME);
 		assertTrue(g2.containsKey("totalResults"));
 		assertEquals(0, g2.get("totalResults"));
 
@@ -373,7 +373,7 @@ public class ScimGroupEndpointsIntegrationTests {
 	}
 
 	private void createTestClient(String name, String secret, String scope) throws Exception {
-		OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read,clients.write");
+		OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read clients.write");
 		HttpHeaders headers = getAuthenticatedHeaders(token);
 		BaseClientDetails client = new BaseClientDetails(name, "", scope, "authorization_code,password", "scim.read,scim.write");
 		client.setClientSecret(secret);
@@ -383,7 +383,7 @@ public class ScimGroupEndpointsIntegrationTests {
 	}
 
 	private void deleteTestClient(String clientId) throws Exception {
-		OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read,clients.write");
+		OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read clients.write");
 		HttpHeaders headers = getAuthenticatedHeaders(token);
 		ResponseEntity<Void> result = serverRunning.getRestTemplate().exchange(
 				serverRunning.getUrl("/oauth/clients/{client}"), HttpMethod.DELETE, new HttpEntity<Void>(headers),
@@ -458,11 +458,11 @@ public class ScimGroupEndpointsIntegrationTests {
 		ResponseEntity<String> response = serverRunning.getForString(location, headers);
 		// should be directed to the login screen...
 		assertTrue(response.getBody().contains("/login.do"));
-		assertTrue(response.getBody().contains("username"));
+		assertTrue(response.getBody().contains("auth_key"));
 		assertTrue(response.getBody().contains("password"));
 
 		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("username", username);
+		formData.add("auth_key", username);
 		formData.add("password", password);
 
 		// Should be redirected to the original URL, but now authenticated

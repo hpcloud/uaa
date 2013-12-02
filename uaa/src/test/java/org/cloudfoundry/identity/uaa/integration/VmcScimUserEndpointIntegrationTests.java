@@ -38,7 +38,7 @@ import org.springframework.web.client.RestOperations;
 
 /**
  * Integration test to verify that the trusted client use cases are supported adequately for vmc.
- * 
+ *
  * @author Luke Taylor
  * @author Dave Syer
  */
@@ -61,13 +61,13 @@ public class VmcScimUserEndpointIntegrationTests {
 
 	@Rule
 	public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
-	
+
 	@BeforeOAuth2Context
 	@OAuth2ContextConfiguration(OAuth2ContextConfiguration.ClientCredentials.class)
 	public void setUpUserAccounts() {
 
 		// If running against vcap we don't want to run these tests because they create new user accounts
-		Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
+		// Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
 
 		RestOperations client = serverRunning.getRestTemplate();
 
@@ -123,6 +123,7 @@ public class VmcScimUserEndpointIntegrationTests {
 	public void userInfoSucceeds() throws Exception {
 
 		HttpHeaders headers = new HttpHeaders();
+		headers.add("Accept", "*/*");
 		RestOperations client = serverRunning.getRestTemplate();
 		ResponseEntity<Void> result = client.exchange(serverRunning.getUrl("/userinfo"), HttpMethod.GET,
 				new HttpEntity<Void>(null, headers), null, joe.getId());

@@ -58,9 +58,21 @@ public class LoginInfoEndpointIntegrationTests {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
-		ResponseEntity<String> response = serverRunning.getForString("/login", headers );
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		String body = response.getBody();
+
+		HttpStatus status = HttpStatus.FOUND;
+		String location = "/login";
+		ResponseEntity<Void> response = null;
+		while (status == HttpStatus.FOUND) {
+			response = serverRunning.getForResponse(location, headers);
+			status = response.getStatusCode();
+			if (status == HttpStatus.FOUND) {
+				location = response.getHeaders().getLocation().toString();
+				System.err.println("Redirected to " + location);
+			}
+		}
+
+		ResponseEntity<String> finalResponse = serverRunning.getForString(location, headers);
+		String body = finalResponse.getBody().toString();
 		// System.err.println(body);
 		assertNotNull(body);
 		assertTrue("Wrong body: "+body, body.contains("<form id="));

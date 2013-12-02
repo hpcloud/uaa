@@ -70,7 +70,7 @@ public class VmcUserIdTranslationEndpointIntegrationTests {
 	public void setUpUserAccounts() {
 
 		// If running against vcap we don't want to run these tests because they create new user accounts
-		Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
+		// Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
 
 		RestOperations client = serverRunning.getRestTemplate();
 

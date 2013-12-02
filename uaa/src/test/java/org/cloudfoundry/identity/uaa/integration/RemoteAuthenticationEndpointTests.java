@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.LinkedMultiValueMap;
@@ -35,6 +36,7 @@ public class RemoteAuthenticationEndpointTests {
 	public ServerRunning serverRunning = ServerRunning.isRunning();
 
 	@Test
+	@Ignore // XXX Not implemented in AOK
 	public void remoteAuthenticationSucceedsWithCorrectCredentials() throws Exception {
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> response = authenticate("marissa", "koala");
@@ -43,6 +45,7 @@ public class RemoteAuthenticationEndpointTests {
 	}
 
 	@Test
+	@Ignore // XXX Not implemented in AOK
 	public void remoteAuthenticationFailsWithIncorrectCredentials() throws Exception {
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> response = authenticate("marissa", "wrong");

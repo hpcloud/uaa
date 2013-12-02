@@ -53,21 +53,7 @@ public class FormLoginIntegrationTests {
 		assertEquals(HttpStatus.FOUND, result.getStatusCode());
 
 		location = result.getHeaders().getLocation().toString();
-		assertTrue(location.contains("/login"));
-	}
-
-	public void testUnauthenticatedHomeRedirect() throws Exception {
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML, MediaType.ALL));
-
-		String location = "/home";
-		ResponseEntity<Void> result = serverRunning.getForResponse(location, headers);
-		// should be directed to the login screen...
-		assertEquals(HttpStatus.FOUND, result.getStatusCode());
-
-		location = result.getHeaders().getLocation().toString();
-		assertTrue(location.contains("/login"));
+		assertTrue("Didn't get expected redirect: " + location, location.contains("/auth/identity"));
 	}
 
 	@Test
@@ -84,11 +70,11 @@ public class FormLoginIntegrationTests {
 		location = result.getHeaders().getLocation().toString();
 		ResponseEntity<String> response = serverRunning.getForString(location, headers);
 		assertTrue(response.getBody().contains("/login.do"));
-		assertTrue(response.getBody().contains("username"));
+		assertTrue(response.getBody().contains("auth_key"));
 		assertTrue(response.getBody().contains("password"));
 
 		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("username", testAccounts.getUserName());
+		formData.add("auth_key", testAccounts.getUserName());
 		formData.add("password", testAccounts.getPassword());
 
 		// Should be redirected to the original URL, but now authenticated

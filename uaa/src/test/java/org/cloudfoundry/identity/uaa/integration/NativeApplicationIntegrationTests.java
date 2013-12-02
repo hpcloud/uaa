@@ -80,7 +80,6 @@ public class NativeApplicationIntegrationTests {
 	 * tests that an error occurs if you attempt to use bad client credentials.
 	 */
 	@Test
-	@Ignore
 	// Need a custom auth entry point to get the correct JSON response here.
 	public void testInvalidClient() throws Exception {
 

@@ -82,11 +82,11 @@ public class AuthorizationCodeGrantIntegrationTests {
 		ResponseEntity<String> response = serverRunning.getForString(location, headers);
 		// should be directed to the login screen...
 		assertTrue(response.getBody().contains("/login.do"));
-		assertTrue(response.getBody().contains("username"));
+		assertTrue(response.getBody().contains("auth_key"));
 		assertTrue(response.getBody().contains("password"));
 
 		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("username", testAccounts.getUserName());
+		formData.add("auth_key", testAccounts.getUserName());
 		formData.add("password", testAccounts.getPassword());
 
 		// Should be redirected to the original URL, but now authenticated

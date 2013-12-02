@@ -295,7 +295,6 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
 		}
 
 		String location = exchange.getHeaders().getLocation().toString();
-
 		return client.exchange(location, HttpMethod.GET, new HttpEntity<Void>(null, headers), null);
 	}
 

@@ -125,13 +125,13 @@ public class ImplicitTokenGrantIntegrationTests {
 		ResponseEntity<String> response = serverRunning.getForString(location, headers);
 		// should be directed to the login screen...
 		assertTrue(response.getBody().contains("/login.do"));
-		assertTrue(response.getBody().contains("username"));
+		assertTrue(response.getBody().contains("auth_key"));
 		assertTrue(response.getBody().contains("password"));
 
 		location = "/login.do";
 
 		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("username", testAccounts.getUserName());
+		formData.add("auth_key", testAccounts.getUserName());
 		formData.add("password", testAccounts.getPassword());
 
 		result = serverRunning.postForRedirect(location, headers, formData);
@@ -140,8 +140,10 @@ public class ImplicitTokenGrantIntegrationTests {
 		// System.err.println(result.getHeaders());
 
 		assertNotNull(result.getHeaders().getLocation());
-		assertTrue(result.getHeaders().getLocation().toString()
-				.matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
+		String expected = "https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+";
+		String actual = result.getHeaders().getLocation().toString();
+		assertTrue(String.format("Expected %s but got %s", expected, actual), actual
+			.matches(expected));
 	}
 
 }

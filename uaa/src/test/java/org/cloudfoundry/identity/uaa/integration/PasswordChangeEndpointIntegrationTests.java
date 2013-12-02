@@ -14,7 +14,11 @@
 package org.cloudfoundry.identity.uaa.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
+import java.util.Arrays;
 import org.cloudfoundry.identity.uaa.message.PasswordChangeRequest;
 import org.cloudfoundry.identity.uaa.scim.ScimUser;
 import org.cloudfoundry.identity.uaa.test.TestAccountSetup;
@@ -27,6 +31,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.test.BeforeOAuth2Context;
 import org.springframework.security.oauth2.client.test.OAuth2ContextConfiguration;
@@ -43,6 +48,7 @@ import org.springframework.web.client.RestOperations;
 public class PasswordChangeEndpointIntegrationTests {
 
 	private final String JOE = "joe_" + new RandomValueStringGenerator().generate().toLowerCase();
+	private final String BOB = "bob_" + new RandomValueStringGenerator().generate().toLowerCase();
 
 	private final String userEndpoint = "/Users";
 
@@ -53,13 +59,14 @@ public class PasswordChangeEndpointIntegrationTests {
 
 	@Rule
 	public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
-	
+
 	@Rule
 	public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
 
 	private RestOperations client;
 
 	private ScimUser joe;
+	private ScimUser bob;
 
 	private ResponseEntity<ScimUser> createUser(String username, String firstName, String lastName, String email) {
 		ScimUser user = new ScimUser();
@@ -72,7 +79,7 @@ public class PasswordChangeEndpointIntegrationTests {
 
 	@Before
 	public void createRestTemplate() throws Exception {
-		Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
+		// Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
 		client = serverRunning.getRestTemplate();
 	}
 
@@ -83,11 +90,21 @@ public class PasswordChangeEndpointIntegrationTests {
 		ResponseEntity<ScimUser> response = createUser(JOE, "Joe", "User", "joe@blah.com");
 		joe = response.getBody();
 		assertEquals(JOE, joe.getUserName());
+		response = createUser(BOB, "Bob", "User", "bob@blah.com");
+		bob = response.getBody();
+		assertEquals(BOB, bob.getUserName());
 	}
 
-	// curl -v -H "Content-Type: application/json" -X PUT -H "Accept: application/json" --data
-	// "{\"password\":\"newpassword\",\"schemas\":[\"urn:scim:schemas:core:1.0\"]}"
-	// http://localhost:8080/uaa/User/{id}/password
+	private String implicitUrl() {
+		URI uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "token")
+				.queryParam("client_id", "vmc").queryParam("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc")
+				.queryParam("scope", "cloud_controller.read").build();
+		return uri.toString();
+	}
+
+	// XXX I (aocole) believe this test is incorrect. This allows a client with the password.change scope
+	// change any user's password, even without uaa.admin scope. This contradicts docs at:
+	// https://github.com/cloudfoundry/uaa/blob/master/docs/UAA-Security.md#password-change
 	@Test
 	@OAuth2ContextConfiguration(OAuth2ContextConfiguration.ClientCredentials.class)
 	public void testChangePasswordSucceeds() throws Exception {
@@ -104,13 +121,13 @@ public class PasswordChangeEndpointIntegrationTests {
 	@Test
 	@OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
 	public void testUserChangesOwnPassword() throws Exception {
-				
+
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
 		parameters.set("source", "credentials");
 		parameters.set("username", joe.getUserName());
 		parameters.set("password", "password");
 		context.getAccessTokenRequest().putAll(parameters);
-		
+
 		PasswordChangeRequest change = new PasswordChangeRequest();
 		change.setOldPassword("password");
 		change.setPassword("newpassword");
@@ -120,18 +137,52 @@ public class PasswordChangeEndpointIntegrationTests {
 				HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
 		assertEquals(HttpStatus.OK, result.getStatusCode());
 
+		// Now try logging in with the new credentials
+		headers = new HttpHeaders();
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+
+		String credentials = String.format("{ \"username\":\"%s\", \"password\":\"%s\" }", joe.getUserName(),
+				"newpassword");
+
+		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+		formData.add("credentials", credentials);
+		result = serverRunning.postForResponse(implicitUrl(), headers, formData);
+
+		assertNotNull(result.getHeaders().getLocation());
+		assertTrue(result.getHeaders().getLocation().toString()
+				.matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
 	}
-	
+
 	@Test
 	@OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
-	public void testUserMustSupplyOldPassword() throws Exception {
-		
+	public void testUserChangesOthersPasswordFails() throws Exception {
+
 		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
 		parameters.set("source", "credentials");
 		parameters.set("username", joe.getUserName());
 		parameters.set("password", "password");
 		context.getAccessTokenRequest().putAll(parameters);
-		
+
+		PasswordChangeRequest change = new PasswordChangeRequest();
+		change.setPassword("newpassword");
+
+		HttpHeaders headers = new HttpHeaders();
+		ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
+				HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, bob.getId());
+		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+
+	}
+
+	@Test
+	@OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
+	public void testUserMustSupplyOldPassword() throws Exception {
+
+		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+		parameters.set("source", "credentials");
+		parameters.set("username", joe.getUserName());
+		parameters.set("password", "password");
+		context.getAccessTokenRequest().putAll(parameters);
+
 		PasswordChangeRequest change = new PasswordChangeRequest();
 		change.setPassword("newpassword");
 
@@ -141,5 +192,5 @@ public class PasswordChangeEndpointIntegrationTests {
 		assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
 	}
-	
+
 }
