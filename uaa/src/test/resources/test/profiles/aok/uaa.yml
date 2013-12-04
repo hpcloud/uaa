@@ -9,7 +9,7 @@ uaa:
     cloud_controller:
       url: http://api.${VCAP_BVT_TARGET:vcap.me}
   host: api.${VCAP_BVT_TARGET:vcap.me}
-  port: 80
+  port: 443
   path: /aok/uaa
 
 batch:

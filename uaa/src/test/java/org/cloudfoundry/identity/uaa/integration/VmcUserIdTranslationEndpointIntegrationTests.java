@@ -27,6 +27,7 @@ import org.cloudfoundry.identity.uaa.test.UaaTestAccounts;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -101,6 +102,7 @@ public class VmcUserIdTranslationEndpointIntegrationTests {
 	}
 
 	@Test
+	@Ignore // XXX Ignoring all tests: user id translation not supported in AOK
 	public void findUsersWithExplicitFilterSucceeds() throws Exception {
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=userName eq '" + JOE + "'", Map.class);
@@ -111,6 +113,7 @@ public class VmcUserIdTranslationEndpointIntegrationTests {
 	}
 
 	@Test
+	@Ignore
 	public void findUsersExplicitEmailFails() throws Exception {
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=emails.value sw 'joe'", Map.class);
@@ -121,6 +124,7 @@ public class VmcUserIdTranslationEndpointIntegrationTests {
 	}
 
 	@Test
+	@Ignore
 	public void findUsersExplicitPresentFails() throws Exception {
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=pr userType", Map.class);
@@ -131,6 +135,7 @@ public class VmcUserIdTranslationEndpointIntegrationTests {
 	}
 
 	@Test
+	@Ignore
 	public void findUsersExplicitGroupFails() throws Exception {
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=groups.display co 'foo'", Map.class);

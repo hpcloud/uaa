@@ -35,7 +35,7 @@
 				<test-includes>**/integration/**.java</test-includes>
 				<!-- <test-includes>**/integration/ScimUserEndpointsIntegrationTests.java</test-includes> -->
 				<!-- <test-includes>**/integration/ScimGroupEndpointsIntegrationTests.java</test-includes> -->
-				<test-includes>**/integration/VmcScimUserEndpointIntegrationTests.java</test-includes>
+				<!-- <test-includes>**/integration/VmcScimUserEndpointIntegrationTests.java</test-includes> -->
 				<!-- <test-includes>**/integration/VmcAuthenticationTests.java</test-includes> -->
 				<!-- <test-includes>**/integration/ImplicitTokenGrantIntegrationTests.java</test-includes> -->
 				<!-- <test-includes>**/integration/AuthorizationCodeGrantIntegrationTests.java</test-includes> -->
@@ -181,6 +181,8 @@
 							<exclude>**/Abstract*.java</exclude>
 						</excludes>
 						<systemPropertyVariables>
+							<javax.net.ssl.trustStore>${project.basedir}/../../aok/truststore.jks</javax.net.ssl.trustStore>
+							<javax.net.ssl.trustStorePassword>aaaaaa</javax.net.ssl.trustStorePassword>
 							<spring.profiles.active>${SPRING_PROFILES_ACTIVE}</spring.profiles.active>
 							<CLOUD_FOUNDRY_CONFIG_PATH>${CLOUD_FOUNDRY_CONFIG_PATH}</CLOUD_FOUNDRY_CONFIG_PATH>
 						</systemPropertyVariables>
