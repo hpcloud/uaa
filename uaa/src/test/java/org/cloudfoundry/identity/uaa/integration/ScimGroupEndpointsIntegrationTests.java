@@ -128,15 +128,20 @@ public class ScimGroupEndpointsIntegrationTests {
 		return u;
 	}
 
-	private ScimGroup createGroup(String name, ScimGroupMember... members) {
+	private ScimGroup createGroup(String name, int expectedNumMembers, ScimGroupMember... members) {
 		ScimGroup g = new ScimGroup(name);
 		List<ScimGroupMember> m = members != null ? Arrays.asList(members) : Collections.<ScimGroupMember> emptyList();
 		g.setMembers(m);
 		ScimGroup g1 = client.postForEntity(serverRunning.getUrl(groupEndpoint), g, ScimGroup.class).getBody();
 		assertEquals(name, g1.getDisplayName());
-		assertEquals(m.size(), g1.getMembers().size());
+		assertEquals(expectedNumMembers, g1.getMembers().size());
 		groupIds.add(g1.getId());
 		return g1;
+	}
+
+	private ScimGroup createGroup(String name, ScimGroupMember... members) {
+		int expectedNumMembers = members != null ? Arrays.asList(members).size() : 0;
+		return createGroup(name, expectedNumMembers, members);
 	}
 
 	private ScimGroup updateGroup(String id, String name, ScimGroupMember... members) {
@@ -211,6 +216,19 @@ public class ScimGroupEndpointsIntegrationTests {
 		validateUserGroups(JOEL.getMemberId(), CFID);
 		validateUserGroups(DALE.getMemberId(), CFID);
 		validateUserGroups(VIDYA.getMemberId(), CFID);
+	}
+
+	@Test
+	public void createGroupWithDuplicateMembersSucceeds() {
+		ScimGroup g1 = createGroup(CFID, 1, JOEL, JOEL, JOEL);
+		// Check we can GET the group
+		ScimGroup g2 = client.getForObject(serverRunning.getUrl(groupEndpoint + "/{id}"), ScimGroup.class, g1.getId());
+		assertEquals(g1, g2);
+		assertEquals(1, g2.getMembers().size());
+		assertTrue(g2.getMembers().contains(JOEL));
+
+		// check that User.groups is updated
+		validateUserGroups(JOEL.getMemberId(), CFID);
 	}
 
 	@Test
