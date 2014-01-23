@@ -151,15 +151,26 @@ public class ScimGroupEndpointsIntegrationTests {
 		List<ScimGroupMember> m = members != null ? Arrays.asList(members) : Collections.<ScimGroupMember> emptyList();
 		g.setMembers(m);
 		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> r = client.exchange(serverRunning.getUrl(groupEndpoint + "/{id}"), HttpMethod.PUT,
-				new HttpEntity<ScimGroup>(g, headers), Map.class, id);
-		logger.warn(r.getBody());
 		ScimGroup g1 = client.exchange(serverRunning.getUrl(groupEndpoint + "/{id}"), HttpMethod.PUT,
 				new HttpEntity<ScimGroup>(g, headers), ScimGroup.class, id).getBody();
 		assertEquals(name, g1.getDisplayName());
 		assertEquals(m.size(), g1.getMembers().size());
 		return g1;
 	}
+
+	// XXX: This won't work until UAA is upgraded to spring 3.2-- 3.1 doesn't support PATCH
+	// private ScimGroup patchGroup(String id, ScimGroupMember addMember) {
+	// 	HttpHeaders headers = new HttpHeaders();
+	// 	headers.add("If-Match", "*");
+	// 	ScimGroup g = new ScimGroup();
+	// 	List<ScimGroupMember> m = Arrays.asList(addMember);
+	// 	g.setMembers(m);
+	// 	ScimGroup g1 = client.exchange(serverRunning.getUrl(groupEndpoint + "/{id}"), HttpMethod.PATCH,
+	// 			new HttpEntity<ScimGroup>(g, headers), ScimGroup.class, id).getBody();
+	// 	assertEquals(name, g1.getDisplayName());
+	// 	// assertEquals(m.size(), g1.getMembers().size());
+	// 	return g1;
+	// }
 
 	private void validateUserGroups(String id, String... groups) {
 		List<String> groupNames = groups != null ? Arrays.asList(groups) : Collections.<String> emptyList();
@@ -361,6 +372,23 @@ public class ScimGroupEndpointsIntegrationTests {
 		validateUserGroups(JOEL.getMemberId(), CFID, "new_name");
 		validateUserGroups(VIDYA.getMemberId(), CFID, "new_name");
 	}
+
+	// XXX: This won't work until UAA is upgraded to spring 3.2-- 3.1 doesn't support PATCH
+	// @Test
+	// public void testPatchGroupUpdatesMemberUsers() {
+	// 	ScimGroup g1 = createGroup(CFID, JOEL, VIDYA);
+
+	// 	ScimGroup g2 = patchGroup(g1.getId(), g1.getDisplayName(), DALE);
+
+	// 	// check that member users were added
+	// 	validateUserGroups(DALE.getMemberId(), CFID);
+	// 	assertEquals(3, g3.getMembers().size());
+
+	// 	// check can't add user twice
+	// 	ScimGroup g3 = patchGroup(g2.getId(), g2.getDisplayName(), DALE);
+	// 	validateUserGroups(DALE.getMemberId(), CFID);
+	// 	assertEquals(3, g3.getMembers().size());
+	// }
 
 	@Test
 	public void testAccessTokenReflectsGroupMembership() throws Exception {
