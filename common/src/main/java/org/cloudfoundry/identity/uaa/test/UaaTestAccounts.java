@@ -279,7 +279,7 @@ public class UaaTestAccounts implements TestAccounts {
 		result.setUserAuthorizationUri(resource.getAccessTokenUri().replace("/token", "/authorize"));
 		result.setClientId(resource.getClientId());
 		result.setClientSecret(resource.getClientSecret());
-		String redirectUri = environment.getProperty("oauth.clients.app.redirect-uri", "http://anywhere.com");
+		String redirectUri = environment.getProperty("oauth.clients.app.redirect-uri", "https://uaa.cloudfoundry.com/redirect/vmc");
 		result.setPreEstablishedRedirectUri(redirectUri);
 		return result;
 	}

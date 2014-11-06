@@ -491,7 +491,7 @@ public class ScimGroupEndpointsIntegrationTests {
 
 		URI uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "code")
 				.queryParam("state", "mystateid").queryParam("client_id", clientId)
-				.queryParam("redirect_uri", "http://anywhere.com").build();
+				.queryParam("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc").build();
 		ResponseEntity<Void> result = serverRunning.getForResponse(uri.toString(), headers);
 		assertEquals(HttpStatus.FOUND, result.getStatusCode());
 		String location = result.getHeaders().getLocation().toString();
@@ -537,11 +537,11 @@ public class ScimGroupEndpointsIntegrationTests {
 			assertEquals(HttpStatus.FOUND, response.getStatusCode());
 			location = response.getHeaders().getLocation().toString();
 		}
-		assertTrue("Wrong location: " + location, location.matches("http://anywhere.com" + ".*code=.+"));
+		assertTrue("Wrong location: " + location, location.matches("https://uaa.cloudfoundry.com/redirect/vmc" + ".*code=.+"));
 
 		formData.clear();
 		formData.add("client_id", clientId);
-		formData.add("redirect_uri", "http://anywhere.com");
+		formData.add("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc");
 		formData.add("grant_type", "authorization_code");
 		formData.add("code", location.split("code=")[1].split("&")[0]);
 		HttpHeaders tokenHeaders = new HttpHeaders();
