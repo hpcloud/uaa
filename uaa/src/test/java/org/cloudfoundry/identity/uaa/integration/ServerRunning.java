@@ -1,15 +1,15 @@
-/*
- * Cloud Foundry 2012.02.03 Beta
- * Copyright (c) [2009-2012] VMware, Inc. All Rights Reserved.
+/*******************************************************************************
+ *     Cloud Foundry 
+ *     Copyright (c) [2009-2014] Pivotal Software, Inc. All Rights Reserved.
  *
- * This product is licensed to you under the Apache License, Version 2.0 (the "License").
- * You may not use this product except in compliance with the License.
+ *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
+ *     You may not use this product except in compliance with the License.
  *
- * This product includes a number of subcomponents with
- * separate copyright notices and license terms. Your use of these
- * subcomponents is subject to the terms and conditions of the
- * subcomponent's license, as noted in the LICENSE file.
- */
+ *     This product includes a number of subcomponents with
+ *     separate copyright notices and license terms. Your use of these
+ *     subcomponents is subject to the terms and conditions of the
+ *     subcomponent's license, as noted in the LICENSE file.
+ *******************************************************************************/
 package org.cloudfoundry.identity.uaa.integration;
 
 import java.io.IOException;
@@ -53,8 +53,9 @@ import org.springframework.web.util.UriUtils;
 
 /**
  * <p>
- * A rule that prevents integration tests from failing if the server application is not running or not accessible. If
- * the server is not running in the background all the tests here will simply be skipped because of a violated
+ * A rule that prevents integration tests from failing if the server application
+ * is not running or not accessible. If the server is not running in the
+ * background all the tests here will simply be skipped because of a violated
  * assumption (showing as successful). Usage:
  * </p>
  *
@@ -64,8 +65,9 @@ import org.springframework.web.util.UriUtils;
  * &#064;Test public void testSendAndReceive() throws Exception { // ... test using server etc. }
  * </pre>
  * <p>
- * The rule can be declared as static so that it only has to check once for all tests in the enclosing test case, but
- * there isn't a lot of overhead in making it non-static.
+ * The rule can be declared as static so that it only has to check once for all
+ * tests in the enclosing test case, but there isn't a lot of overhead in making
+ * it non-static.
  * </p>
  *
  * @see Assume
@@ -134,7 +136,7 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
 
     /**
      * The context root in the application, e.g. "/uaa" for a local deployment.
-     *
+     * 
      * @param rootPath the rootPath to set
      */
     public void setRootPath(String rootPath) {
@@ -162,19 +164,17 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
         try {
             client.getForEntity(new UriTemplate(getUrl("/login")).toString(), String.class);
             online = true;
-            logger.info("Basic connectivity test passed");
-        }
-        catch (RestClientException e) {
+            logger.debug("Basic connectivity test passed");
+        } catch (RestClientException e) {
             logger.warn(String.format("Basic connectivity test failed for hostName=%s, port=%d: %s", hostName, port, e));
             if (!integrationTest) {
                 logger.warn("Tests will not be run");
                 Assume.assumeNoException(e);
             } else {
                 logger.error(String.format("\n\n*** Integration tests will fail as 'uaa.integration.test' " +
-                        "is set to 'true' and uaa host '%s' is down ***\n", hostName));
+                                "is set to 'true' and uaa host '%s' is down ***\n", hostName));
             }
-        }
-        finally {
+        } finally {
             if (!online) {
                 serverOnline.put(port, false);
             }
@@ -191,32 +191,39 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
 
     }
 
+    @Override
     public String getBaseUrl() {
-        return "https://" + hostName + (port == 80 ? "" : ":" + port) + rootPath;
+        return "http://" + hostName + (port == 80 ? "" : ":" + port) + rootPath;
     }
 
+    @Override
     public String getAccessTokenUri() {
         return getUrl("/oauth/token");
     }
 
+    @Override
     public String getAuthorizationUri() {
         return getUrl("/oauth/authorize");
     }
 
+    @Override
     public String getClientsUri() {
         return getUrl("/oauth/clients");
     }
 
+    @Override
     public String getUsersUri() {
         return getUrl("/Users");
     }
 
+    @Override
     public String getUserUri() {
         return getUrl("/Users");
     }
 
+    @Override
     public String getUrl(String path) {
-        if (path.startsWith("https:")) {
+        if (path.startsWith("http:")) {
             return path;
         }
         if (!path.startsWith("/")) {
@@ -234,7 +241,7 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         }
         return client.exchange(getUrl(path), HttpMethod.POST, new HttpEntity<MultiValueMap<String, String>>(formData,
-                headers), String.class);
+                        headers), String.class);
     }
 
     @SuppressWarnings("rawtypes")
@@ -248,7 +255,7 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         }
         return client.exchange(getUrl(path), HttpMethod.POST, new HttpEntity<MultiValueMap<String, String>>(formData,
-                headers), Map.class);
+                        headers), Map.class);
     }
 
     public ResponseEntity<String> getForString(String path) {
@@ -270,7 +277,7 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
 
     public ResponseEntity<Void> getForResponse(String path, final HttpHeaders headers, Object... uriVariables) {
         HttpEntity<Void> request = new HttpEntity<Void>(null, headers);
-        return client.exchange(getUrl(path), HttpMethod.GET, request, null, uriVariables);
+        return client.exchange(getUrl(path), HttpMethod.GET, request, Void.class, uriVariables);
     }
 
     public ResponseEntity<Void> postForResponse(String path, HttpHeaders headers, MultiValueMap<String, String> params) {
@@ -279,7 +286,7 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
         actualHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         return client.exchange(getUrl(path), HttpMethod.POST, new HttpEntity<MultiValueMap<String, String>>(params,
-                actualHeaders), null);
+                        actualHeaders), Void.class);
     }
 
     public ResponseEntity<Void> postForRedirect(String path, HttpHeaders headers, MultiValueMap<String, String> params) {
@@ -295,9 +302,11 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
         }
 
         String location = exchange.getHeaders().getLocation().toString();
-        return client.exchange(location, HttpMethod.GET, new HttpEntity<Void>(null, headers), null);
+
+        return client.exchange(location, HttpMethod.GET, new HttpEntity<Void>(null, headers), Void.class);
     }
 
+    @Override
     public RestOperations getRestTemplate() {
         if (client == null) {
             client = createRestTemplate();
@@ -305,6 +314,7 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
         return client;
     }
 
+    @Override
     public void setRestTemplate(RestOperations restTemplate) {
         this.client = restTemplate;
         if (restTemplate instanceof HttpAccessor) {
@@ -317,10 +327,12 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
         client.setRequestFactory(new StatelessRequestFactory());
         client.setErrorHandler(new ResponseErrorHandler() {
             // Pass errors through in response entity for status code analysis
+            @Override
             public boolean hasError(ClientHttpResponse response) throws IOException {
                 return false;
             }
 
+            @Override
             public void handleError(ClientHttpResponse response) throws IOException {
             }
         });
@@ -328,7 +340,7 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
     }
 
     public UriBuilder buildUri(String url) {
-        return UriBuilder.fromUri(url.startsWith("https:") ? url : getUrl(url));
+        return UriBuilder.fromUri(url.startsWith("http:") ? url : getUrl(url));
     }
 
     private static class StatelessRequestFactory extends HttpComponentsClientHttpRequestFactory {
@@ -379,12 +391,10 @@ public class ServerRunning implements MethodRule, RestTemplateHolder, UrlHelper 
                     }
                 }
                 return new URI(builder.toString());
-            }
-            catch (UnsupportedEncodingException ex) {
+            } catch (UnsupportedEncodingException ex) {
                 // should not happen, UTF-8 is always supported
                 throw new IllegalStateException(ex);
-            }
-            catch (URISyntaxException ex) {
+            } catch (URISyntaxException ex) {
                 throw new IllegalArgumentException("Could not create URI from [" + builder + "]: " + ex, ex);
             }
         }

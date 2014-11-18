@@ -1,15 +1,15 @@
-/*
- * Cloud Foundry 2012.02.03 Beta
- * Copyright (c) [2009-2012] VMware, Inc. All Rights Reserved.
+/*******************************************************************************
+ *     Cloud Foundry 
+ *     Copyright (c) [2009-2014] Pivotal Software, Inc. All Rights Reserved.
  *
- * This product is licensed to you under the Apache License, Version 2.0 (the "License").
- * You may not use this product except in compliance with the License.
+ *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
+ *     You may not use this product except in compliance with the License.
  *
- * This product includes a number of subcomponents with
- * separate copyright notices and license terms. Your use of these
- * subcomponents is subject to the terms and conditions of the
- * subcomponent's license, as noted in the LICENSE file.
- */
+ *     This product includes a number of subcomponents with
+ *     separate copyright notices and license terms. Your use of these
+ *     subcomponents is subject to the terms and conditions of the
+ *     subcomponent's license, as noted in the LICENSE file.
+ *******************************************************************************/
 package org.cloudfoundry.identity.uaa.integration;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +31,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 /**
- * Tests implicit grant using a direct posting of credentials to the /authorize endpoint and also with an intermediate
+ * Tests implicit grant using a direct posting of credentials to the /authorize
+ * endpoint and also with an intermediate
  * form login.
  * 
  * @author Dave Syer
@@ -45,11 +46,12 @@ public class ImplicitTokenGrantIntegrationTests {
 
     @Rule
     public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
-    
+
     private String implicitUrl() {
         URI uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "token")
-                .queryParam("client_id", "vmc").queryParam("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc")
-                .queryParam("scope", "cloud_controller.read").build();
+                        .queryParam("client_id", "vmc")
+                        .queryParam("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc")
+                        .queryParam("scope", "cloud_controller.read").build();
         return uri.toString();
     }
 
@@ -60,10 +62,10 @@ public class ImplicitTokenGrantIntegrationTests {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
         String credentials = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", testAccounts.getUserName(),
-                testAccounts.getPassword());
+                        testAccounts.getPassword());
 
         ResponseEntity<Void> result = serverRunning.getForResponse(implicitUrl() + "&credentials={credentials}",
-                headers, credentials);
+                        headers, credentials);
 
         assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
 
@@ -76,7 +78,7 @@ public class ImplicitTokenGrantIntegrationTests {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
         String credentials = String.format("{ \"username\":\"%s\", \"password\":\"%s\" }", testAccounts.getUserName(),
-                testAccounts.getPassword());
+                        testAccounts.getPassword());
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
         formData.add("credentials", credentials);
@@ -84,7 +86,7 @@ public class ImplicitTokenGrantIntegrationTests {
 
         assertNotNull(result.getHeaders().getLocation());
         assertTrue(result.getHeaders().getLocation().toString()
-                .matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
+                        .matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
 
     }
 
@@ -95,7 +97,7 @@ public class ImplicitTokenGrantIntegrationTests {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
 
         String credentials = String.format("{ \"username\":\"%s\", \"password\":\"%s\" }", testAccounts.getUserName(),
-                testAccounts.getPassword());
+                        testAccounts.getPassword());
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
         formData.add("credentials", credentials);
@@ -104,7 +106,7 @@ public class ImplicitTokenGrantIntegrationTests {
         URI location = result.getHeaders().getLocation();
         assertNotNull(location);
         assertTrue("Wrong location: " + location, location.toString()
-                .matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
+                        .matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
 
     }
 
@@ -140,10 +142,8 @@ public class ImplicitTokenGrantIntegrationTests {
         // System.err.println(result.getHeaders());
 
         assertNotNull(result.getHeaders().getLocation());
-        String expected = "https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+";
-        String actual = result.getHeaders().getLocation().toString();
-        assertTrue(String.format("Expected %s but got %s", expected, actual), actual
-            .matches(expected));
+        assertTrue(result.getHeaders().getLocation().toString()
+                        .matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
     }
 
 }

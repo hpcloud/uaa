@@ -1,18 +1,15 @@
-/*
- * Copyright 2002-2011 the original author or authors.
+/*******************************************************************************
+ *     Cloud Foundry 
+ *     Copyright (c) [2009-2014] Pivotal Software, Inc. All Rights Reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
+ *     You may not use this product except in compliance with the License.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ *     This product includes a number of subcomponents with
+ *     separate copyright notices and license terms. Your use of these
+ *     subcomponents is subject to the terms and conditions of the
+ *     subcomponent's license, as noted in the LICENSE file.
+ *******************************************************************************/
 package org.cloudfoundry.identity.uaa.test;
 
 import static org.junit.Assert.assertEquals;
@@ -117,35 +114,35 @@ public class TestAccountSetup extends TestWatchman {
 
     private void createVmcClient(RestOperations client) {
         BaseClientDetails clientDetails = new BaseClientDetails("vmc", "cloud_controller,openid,password",
-                "openid,cloud_controller.read,password.write,scim.userids", "implicit", "uaa.none",
-                "https://uaa.cloudfoundry.com/redirect/vmc");
+                        "openid,cloud_controller.read,cloud_controller.permissions,password.write,scim.userids", "implicit", "uaa.none",
+                        "https://uaa.cloudfoundry.com/redirect/vmc");
         createClient(client, testAccounts.getClientDetails("oauth.clients.vmc", clientDetails));
     }
 
     private void createScimClient(RestOperations client) {
-        BaseClientDetails clientDetails = new BaseClientDetails("scim", "none", "uaa.none", "client_credentials",
-                "scim.read,scim.write,password.write");
+        BaseClientDetails clientDetails = new BaseClientDetails("scim", "oauth", "uaa.none", "client_credentials",
+                        "scim.read,scim.write,password.write,oauth.approvals");
         clientDetails.setClientSecret("scimsecret");
         createClient(client, testAccounts.getClientDetails("oauth.clients.scim", clientDetails));
     }
 
     private void createAppClient(RestOperations client) {
         BaseClientDetails clientDetails = new BaseClientDetails("app", "none",
-                "cloud_controller.read,openid,password.write", "password,authorization_code,refresh_token",
-                "uaa.resource");
+                        "cloud_controller.read,cloud_controller.permissions,openid,password.write", "password,authorization_code,refresh_token",
+                        "uaa.resource");
         clientDetails.setClientSecret("appclientsecret");
         createClient(client, testAccounts.getClientDetails("oauth.clients.app", clientDetails));
     }
 
     private void createClient(RestOperations client, ClientDetails clientDetails) {
         ResponseEntity<String> response = client.postForEntity(serverRunning.getClientsUri(), clientDetails,
-                String.class);
+                        String.class);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
     private boolean clientExists(RestOperations client, OAuth2ProtectedResourceDetails resource) {
         ResponseEntity<String> response = client.getForEntity(
-                serverRunning.getClientsUri() + "/" + resource.getClientId(), String.class);
+                        serverRunning.getClientsUri() + "/" + resource.getClientId(), String.class);
         return response != null && response.getStatusCode() == HttpStatus.OK;
     }
 
@@ -155,12 +152,12 @@ public class TestAccountSetup extends TestWatchman {
 
     private boolean scimClientExists(RestOperations client) {
         return clientExists(client,
-                testAccounts.getClientCredentialsResource("oauth.clients.scim", "scim", "scimsecret"));
+                        testAccounts.getClientCredentialsResource("oauth.clients.scim", "scim", "scimsecret"));
     }
 
     private boolean appClientExists(RestOperations client) {
         return clientExists(client,
-                testAccounts.getClientCredentialsResource("oauth.clients.app", "app", "appclientsecret"));
+                        testAccounts.getClientCredentialsResource("oauth.clients.app", "app", "appclientsecret"));
     }
 
     private void initializeUserAccount(RestOperations client) {
@@ -169,8 +166,8 @@ public class TestAccountSetup extends TestWatchman {
 
             UaaUser user = testAccounts.getUser();
             @SuppressWarnings("rawtypes")
-            ResponseEntity<Map> results = client.getForEntity(serverRunning.getUserUri() + "?filter=userName eq \""
-                    + user.getUsername() + "\"", Map.class);
+            ResponseEntity<Map> results = client.getForEntity(serverRunning.getUserUri() + "?filter=userName eq '"
+                            + user.getUsername() + "'", Map.class);
             assertEquals(HttpStatus.OK, results.getStatusCode());
             @SuppressWarnings("unchecked")
             List<Map<String, ?>> resources = (List<Map<String, ?>>) results.getBody().get("resources");
@@ -183,7 +180,7 @@ public class TestAccountSetup extends TestWatchman {
                 @SuppressWarnings("rawtypes")
                 ResponseEntity<Map> response = client.postForEntity(serverRunning.getUserUri(), map, Map.class);
                 Assert.state(response.getStatusCode() == HttpStatus.CREATED, "User account not created: status was "
-                        + response.getStatusCode());
+                                + response.getStatusCode());
                 @SuppressWarnings("unchecked")
                 Map<String, ?> value = response.getBody();
                 map = value;
@@ -200,7 +197,7 @@ public class TestAccountSetup extends TestWatchman {
         String email = null;
         if (map.containsKey("emails")) {
             @SuppressWarnings("unchecked")
-            Collection<Map<String,String>> emails = (Collection<Map<String,String>>)map.get("emails");
+            Collection<Map<String, String>> emails = (Collection<Map<String, String>>) map.get("emails");
             if (!emails.isEmpty()) {
                 email = emails.iterator().next().get("value");
             }
@@ -209,23 +206,24 @@ public class TestAccountSetup extends TestWatchman {
         String familyName = null;
         if (map.containsKey("name")) {
             @SuppressWarnings("unchecked")
-            Map<String,String> name = (Map<String,String>)map.get("name");
+            Map<String, String> name = (Map<String, String>) map.get("name");
             givenName = name.get("givenName");
             familyName = name.get("familyName");
         }
         @SuppressWarnings("unchecked")
-        Collection<Map<String,String>> groups = (Collection<Map<String,String>>)map.get("groups");
-        return new UaaUser(id, userName, "<N/A>", email, extractAuthorities(groups), givenName, familyName, new Date(), new Date());
+        Collection<Map<String, String>> groups = (Collection<Map<String, String>>) map.get("groups");
+        return new UaaUser(id, userName, "<N/A>", email, extractAuthorities(groups), givenName, familyName, new Date(),
+                        new Date());
     }
 
     private List<? extends GrantedAuthority> extractAuthorities(Collection<Map<String, String>> groups) {
         List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
-        for (Map<String,String> group : groups) {
+        for (Map<String, String> group : groups) {
             String role = group.get("display");
-            Assert.state(role!=null, "Role is null in this group: " + group);
+            Assert.state(role != null, "Role is null in this group: " + group);
             authorities.add(new SimpleGrantedAuthority(role));
         }
-        return authorities ;
+        return authorities;
     }
 
     private Map<String, ?> getUserAsMap(UaaUser user) {
@@ -255,7 +253,7 @@ public class TestAccountSetup extends TestWatchman {
     }
 
     private OAuth2RestTemplate createRestTemplate(OAuth2ProtectedResourceDetails resource,
-            AccessTokenRequest accessTokenRequest) {
+                    AccessTokenRequest accessTokenRequest) {
         OAuth2ClientContext context = new DefaultOAuth2ClientContext(accessTokenRequest);
         OAuth2RestTemplate client = new OAuth2RestTemplate(resource, context);
         client.setRequestFactory(new SimpleClientHttpRequestFactory() {

@@ -3,8 +3,6 @@
 
 spring_profiles: postgresql # default is empty
 
-login.addnew: false # true in default profile  
-
 database:
   driverClassName: org.postgresql.Driver # only if spring_profiles=postgresql
   url: jdbc:postgresql:uaa # only if spring_profiles=postgresql
@@ -46,7 +44,7 @@ oauth:
     login:
       id: login
       secret: loginsecret
-      scope: openid
+      scope: openid, oauth.approvals
       authorized-grant-types: client_credentials,authorization_code
       authorities: oauth.login
 

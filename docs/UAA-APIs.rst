@@ -189,8 +189,8 @@ In addition to the normal authentication of the ``/oauth/authorize`` endpoint de
 
     id: login,
     secret: loginsecret,
-    scope: uaa.none,
-    authorized-grant-types: client_credentials,
+    scope: uaa.none,oauth.approvals
+    authorized_grant_types: client_credentials,
     authorities: oauth.login
 
 To authenticate the ``/oauth/authorize`` endpoint using this channel the Login Server has to provide a standard OAuth2 bearer token header _and_ some additional parameters to identify the user: ``source=login`` is mandatory, as is ``username``, plus optionally ``[email, given_name, family_name]``.  The UAA will lookup the user in its internal database and if it is found the request is authenticated.  The UAA can be configured to automatically register authenicated users that are missing from its database, but this will only work if all the fields are provided.  The response from the UAA (if the Login Server asks for JSON content) has enough information to get approval from the user and pass the response back to the UAA.
@@ -308,8 +308,8 @@ This endpoint mirrors the OpenID Connect ``/check_id`` endpoint, so not very RES
 
 Notes:
 
-* The ``user_name`` is the same as you get from the `OpenID Connect`_ ``/userinfo`` endpoint.  The ``user_id`` field is the same as you would use to get the full user profile from ``/User``.
-* Many of the fields in the response are a courtesy, allowing the caller to avoid further round trip queries to pick up the same information (e.g. via the ``/User`` endpoint).
+* The ``user_name`` is the same as you get from the `OpenID Connect`_ ``/userinfo`` endpoint.  The ``user_id`` field is the same as you would use to get the full user profile from ``/Users``.
+* Many of the fields in the response are a courtesy, allowing the caller to avoid further round trip queries to pick up the same information (e.g. via the ``/Users`` endpoint).
 * The ``aud`` claim is the resource ids that are the audience for the token.  A Resource Server should check that it is on this list or else reject the token.
 * The ``client_id`` data represent the client that the token was granted for, not the caller.  The value can be used by the caller, for example, to verify that the client has been granted permission to access a resource.
 * Error Responses: see `OAuth2 Error responses <http://tools.ietf.org/html/draft-ietf-oauth-v2-26#section-5.2>`_ and this addition::
@@ -420,14 +420,14 @@ User Account Management APIs
 UAA supports the `SCIM <http://simplecloud.info>`_ standard for
 these APIs and endpoints.  These endpoints are themselves secured by OAuth2, and access decision is done based on the 'scope' and 'aud' fields of the JWT OAuth2 token.
 
-Create a User: ``POST /User``
+Create a User: ``POST /Users``
 ------------------------------
 
 See `SCIM - Creating Resources`__
 
 __ http://www.simplecloud.info/specs/draft-scim-rest-api-01.html#create-resource
 
-* Request: ``POST /User``
+* Request: ``POST /Users``
 * Request Headers: Authorization header containing an OAuth2_ bearer token with::
 
         scope = scim.write
@@ -478,12 +478,12 @@ The ``userName`` is unique in the UAA, but is allowed to change.  Each user also
         401 - Unauthorized
 
 
-Update a User: ``PUT /User/{id}``
+Update a User: ``PUT /Users/{id}``
 ----------------------------------------
 
 See `SCIM - Modifying with PUT <http://www.simplecloud.info/specs/draft-scim-rest-api-01.html#edit-resource-with-put>`_
 
-* Request: ``PUT /User/{id}``
+* Request: ``PUT /Users/{id}``
 * Request Headers: Authorization header containing an OAuth2_ bearer token with::
 
         scope = scim.write
@@ -535,12 +535,12 @@ See `SCIM - Modifying with PUT <http://www.simplecloud.info/specs/draft-scim-res
 
   Note: SCIM also optionally supports partial update using PATCH.
 
-Change Password: ``PUT /User/{id}/password``
+Change Password: ``PUT /Users/{id}/password``
 ----------------------------------------------
 
 See `SCIM - Changing Password <http://www.simplecloud.info/specs/draft-scim-rest-api-01.html#change-password>`_
 
-* Request: ``PUT /User/{id}/password``
+* Request: ``PUT /Users/{id}/password``
 * Request Headers: Authorization header containing an OAuth2_ bearer token with::
 
         scope = password.write
@@ -573,6 +573,38 @@ See `SCIM - Changing Password <http://www.simplecloud.info/specs/draft-scim-rest
 
 .. note:: SCIM specifies that a password change is a PATCH, but since this isn't supported by many clients, we have used PUT.  SCIM offers the option to use POST with a header override - if clients want to send `X-HTTP-Method-Override` they can ask us to add support for that.
 
+Verify User: ``GET /Users/{id}/verify``
+----------------------------------------------
+
+
+* Request: ``GET /Users/{id}/verify``
+* Request Headers: Authorization header containing an OAuth2_ bearer token with::
+
+        scope = scim.write
+        aud = scim
+
+  OR ::
+
+        user_id = {id} i.e id of the user whose verify status is being set to true
+
+* Request Body::
+
+        Host: example.com
+        Accept: application/json
+        Authorization: Bearer h480djs93hd8
+
+
+* Response Body: the updated details
+
+* Response Codes::
+
+        200 - Updated successfully
+        400 - Bad Request
+        401 - Unauthorized
+        404 - Not found
+
+.. note:: SCIM specifies that a password change is a PATCH, but since this isn't supported by many clients, we have used PUT.  SCIM offers the option to use POST with a header override - if clients want to send `X-HTTP-Method-Override` they can ask us to add support for that.
+
 Query for Information: ``GET /Users``
 ---------------------------------------
 
@@ -590,7 +622,7 @@ Filters: note that, per the specification, attribute values are comma separated 
         scope = scim.read
         aud = scim
 
-* Response Body (for ``GET /Users?attributes=id&filter=emails.value eq bjensen@example.com``)::
+* Response Body (for ``GET /Users?attributes=id&filter=emails.value eq 'bjensen@example.com'``)::
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -605,6 +637,25 @@ Filters: note that, per the specification, attribute values are comma separated 
           ]
         }
 
+Query for the existence of a specific username.
+
+* Response Body (for ``GET /Users?attributes=userName&filter=userName eq 'bjensen'``)::
+	
+	HTTP/1.1 200 OK
+        Content-Type: application/json
+        
+        {
+    	  "resources": [
+            {
+              "userName": "bjensen"
+            }
+          ],
+    	  "startIndex": 1,
+    	  "itemsPerPage": 100,
+    	  "totalResults": 1,
+    	  "schemas":["urn:scim:schemas:core:1.0"]
+	}
+
 
 * Response Codes::
 
@@ -612,12 +663,12 @@ Filters: note that, per the specification, attribute values are comma separated 
         400 - Bad Request
         401 - Unauthorized
 
-Delete a User: ``DELETE /User/{id}``
+Delete a User: ``DELETE /Users/{id}``
 -------------------------------------
 
 See `SCIM - Deleting Resources <http://www.simplecloud.info/specs/draft-scim-rest-api-01.html#delete-resource>`_.
 
-* Request: ``DELETE /User/{id}``
+* Request: ``DELETE /Users/{id}``
 * Request Headers: 
 
   + Authorization header containing an OAuth2_ bearer token with::
@@ -957,19 +1008,19 @@ Response code    ``200 OK`` if successful with client details in JSON response
 Response body   *example* ::
 
                   HTTP/1.1 200 OK
-                  {foo: {
-                    client_id : foo,
-                    scope : [uaa.none]
-                    resource_ids : [none],
-                    authorities : [cloud_controller.read,cloud_controller.write,scim.read],
-                    authorized_grant_types : [client_credentials]
+                  {"foo": {
+                    "client_id" : "foo",
+                    "scope" : ["uaa.none"],
+                    "resource_ids" : ["none"],
+                    "authorities" : ["cloud_controller.read","cloud_controller.write","scim.read"],
+                    "authorized_grant_types" : ["client_credentials"]
                   },
-                  bar: {
-                    client_id : bar,
-                    scope : [cloud_controller.read,cloud_controller.write,openid],
-                    resource_ids : [none],
-                    authorities : [uaa.none],
-                    authorized_grant_types : [authorization_code]
+                  "bar": {
+                    "client_id" : "bar",
+                    "scope" : ["cloud_controller.read","cloud_controller.write","openid"],
+                    "resource_ids" : ["none"],
+                    "authorities" : ["uaa.none"],
+                    "authorized_grant_types" : ["authorization_code"]
                   }}
 
 ==============  ===========================================================================
@@ -986,11 +1037,11 @@ Response body   *example*::
 
                   HTTP/1.1 200 OK
                   {
-                    client_id : foo,
-                    scope : [uaa.none],
-                    resource_ids : [none],
-                    authorities : [cloud_controller.read,cloud_controller.write,scim.read],
-                    authorized_grant_types : [client_credentials]
+                    "client_id" : "foo",
+                    "scope" : ["uaa.none"],
+                    "resource_ids" : ["none"],
+                    "authorities" : ["cloud_controller.read","cloud_controller.write","scim.read"],
+                    "authorized_grant_types" : ["client_credentials"]
                   }
 
 =============== ===============================================================
@@ -1009,13 +1060,13 @@ Example request::
 
     POST /oauth/clients/foo
     {
-      client_id : foo,
-      client_secret : fooclientsecret, // optional for untrusted clients
-      scope : [uaa.none],
-      resource_ids : [none],
-      authorities : [cloud_controller.read,cloud_controller.write,openid],
-      authorized_grant_types : [client_credentials],
-      access_token_validity: 43200
+      "client_id" : "foo",
+      "client_secret" : "fooclientsecret", // optional for untrusted clients
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"],
+      "access_token_validity": 43200
     }
 
 (Also available for grant types that support it: ``refresh_token_validity``.)
@@ -1034,11 +1085,11 @@ Example::
 
     PUT /oauth/clients/foo
     {
-      client_id : foo,
-      scope : [uaa.none],
-      resource_ids : [none],
-      authorities : [cloud_controller.read,cloud_controller.write,openid],
-      authorized_grant_types : [client_credentials]
+      "client_id" : "foo",
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"]
     }
 
 N.B. the secret will not be changed, even if it is included in the
@@ -1055,6 +1106,7 @@ Response body   the old client
 ==============  ===============================================
 
 
+
 Change Client Secret: ``PUT /oauth/clients/{client_id}/secret``
 ------------------------------------------------------------------
 
@@ -1069,9 +1121,177 @@ Example::
 
     PUT /oauth/clients/foo/secret
     {
-      oldSecret: fooclientsecret,
-      secret: newclientsceret
+      "oldSecret": "fooclientsecret",
+      "secret": "newclientsceret"
     }
+
+
+Register Multiple Clients: ``POST /oauth/clients/tx``
+-------------------------------------------------------
+
+==============  ===============================================
+Request         ``POST /oauth/clients/tx``
+Request body    an array of client details
+Response code    ``201 CREATED`` if successful
+Response body   an array of client details
+Transactional   either all clients get registered or none
+Scope Required  clients.admin
+==============  ===============================================
+
+Example request::
+
+    POST /oauth/clients/tx
+    [{
+      "client_id" : "foo",
+      "client_secret" : "fooclientsecret", // optional for untrusted clients
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"],
+      "access_token_validity": 43200
+    },
+    {
+      "client_id" : "bar",
+      "client_secret" : "barclientsecret", // optional for untrusted clients
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"],
+      "access_token_validity": 43200
+    }]
+
+
+
+
+Update Multiple Clients: ``PUT /oauth/clients/tx``
+------------------------------------------------------
+
+==============  ===============================================
+Request         ``PUT /oauth/clients/tx``
+Request body    an array of client details
+Response code   ``200 OK`` if successful
+Response body   an array of client details
+Transactional   either all clients get updated or none
+Scope Required  clients.admin
+==============  ===============================================
+
+Example::
+
+    PUT /oauth/clients/tx
+    [{
+      "client_id" : "foo",
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"]
+    },
+    {
+      "client_id" : "foo",
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"]
+    }]
+
+N.B. the secret will not be changed, even if it is included in the
+request body (use the secret change endpoint instead).
+
+Register, update or delete Multiple Clients: ``POST /oauth/clients/tx/modify``
+-------------------------------------------------------
+
+==============  ===============================================
+Request         ``POST /oauth/clients/tx/modify``
+Request body    an array of client details
+Response code    ``200 OK`` if successful
+Response body   an array of client details
+Transactional   either all clients get added/updated/deleted or no changes are performed
+Scope Required  clients.admin
+Rules           The 'secret' and 'update,secret' will change the secret and delete approvals.
+                To change secret without deleting approvals use the /oauth/clients/tx/secret API
+==============  ===============================================
+
+Example request::
+
+    POST /oauth/clients/tx
+    [{
+      "client_id" : "foo",
+      "client_secret" : "fooclientsecret", // optional for untrusted clients
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"],
+      "access_token_validity": 43200,
+      "action" : "add"
+    },
+    {
+      "client_id" : "bar",
+      "client_secret" : "barclientsecret", // ignored and not required for an update
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"],
+      "access_token_validity": 43200,
+      "action" : "update"
+    },
+    {
+      "client_id" : "bar",
+      "client_secret" : "barclientsecret", //new secret - if changed, approvals are deleted
+      "scope" : ["uaa.none"],
+      "resource_ids" : ["none"],
+      "authorities" : ["cloud_controller.read","cloud_controller.write","openid"],
+      "authorized_grant_types" : ["client_credentials"],
+      "access_token_validity": 43200,
+      "action" : "update,secret"
+    },
+    {
+      "client_id" : "zzz",
+      "action" : "delete"
+    },
+    {
+      "client_id" : "zzz",
+      "client_secret" : "zzzclientsecret", // new password, if changed client approvals are deleted
+      "action" : "secret"
+    }]
+
+Change Multiple Client Secrets: ``POST /oauth/clients/tx/secret``
+------------------------------------------------------------------
+
+==============  ===============================================
+Request         ``POST /oauth/clients/tx/secret``
+Request body    *an array of secret change request*
+Reponse code    ``200 OK`` if successful
+Response body   a list of all the clients that had their secret changed.
+Transactional   either all clients' secret changed or none
+Scope Required  clients.admin
+Rules           The 'secret' and 'update,secret' will change the secret and delete approvals.
+                To change secret without deleting approvals use the /oauth/clients/tx/secret API
+==============  ===============================================
+
+Example::
+
+    POST /oauth/clients/tx/secret
+    [{
+      "clientId" : "foo",
+      "oldSecret": "fooclientsecret",
+      "secret": "newfooclientsceret"
+    },{
+      "clientId" : "bar",
+      "oldSecret": "barclientsecret",
+      "secret": "newbarclientsceret"
+    }]
+
+
+Delete Multiple Clients: ``POST /oauth/clients/tx/delete``
+-------------------------------------------------------
+
+==============  ===============================================
+Request         ``POST /oauth/clients/tx/delete``
+Request body    an array of clients to be deleted
+Response code   ``200 OK``
+Response body   an array of the deleted clients
+Transactional   either all clients get deleted or none
+==============  ===============================================
+
 
 UI Endpoints
 ==============

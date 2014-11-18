@@ -1,3 +1,15 @@
+/*******************************************************************************
+ *     Cloud Foundry 
+ *     Copyright (c) [2009-2014] Pivotal Software, Inc. All Rights Reserved.
+ *
+ *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
+ *     You may not use this product except in compliance with the License.
+ *
+ *     This product includes a number of subcomponents with
+ *     separate copyright notices and license terms. Your use of these
+ *     subcomponents is subject to the terms and conditions of the
+ *     subcomponent's license, as noted in the LICENSE file.
+ *******************************************************************************/
 package org.cloudfoundry.identity.uaa.integration;
 
 import static org.junit.Assert.assertEquals;
@@ -63,7 +75,9 @@ public class ScimGroupEndpointsIntegrationTests {
 
     private final Log logger = LogFactory.getLog(getClass());
 
-    private static final List<String> defaultGroups = Arrays.asList("openid","scim.me","cloud_controller.read","cloud_controller.write","password.write","scim.userids","uaa.user","approvals.me");
+    private static final List<String> defaultGroups = Arrays.asList("openid", "scim.me", "cloud_controller.read",
+                    "cloud_controller.write", "password.write", "scim.userids", "uaa.user", "approvals.me",
+                    "oauth.approvals", "cloud_controller.permissions");
 
     @Rule
     public ServerRunning serverRunning = ServerRunning.isRunning();
@@ -86,11 +100,11 @@ public class ScimGroupEndpointsIntegrationTests {
         client = serverRunning.getRestTemplate();
 
         JOEL = new ScimGroupMember(createUser("joel_" + new RandomValueStringGenerator().generate().toLowerCase(),
-                "pwd").getId());
+                        "pwd").getId());
         DALE = new ScimGroupMember(createUser("dale_" + new RandomValueStringGenerator().generate().toLowerCase(),
-                "pwd").getId());
+                        "pwd").getId());
         VIDYA = new ScimGroupMember(createUser("vidya_" + new RandomValueStringGenerator().generate().toLowerCase(),
-                "pwd").getId());
+                        "pwd").getId());
     }
 
     @After
@@ -108,7 +122,7 @@ public class ScimGroupEndpointsIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         headers.add("If-Match", "*");
         return client.exchange(serverRunning.getUrl(url + "/{id}"), HttpMethod.DELETE, new HttpEntity<Void>(headers),
-                Map.class, id);
+                        Map.class, id);
     }
 
     private ScimUser createUser(String username, String password) {
@@ -123,25 +137,20 @@ public class ScimGroupEndpointsIntegrationTests {
 
         HttpHeaders headers = new HttpHeaders();
         ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
-                HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, u.getId());
+                        HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), Void.class, u.getId());
         assertEquals(HttpStatus.OK, result.getStatusCode());
         return u;
     }
 
-    private ScimGroup createGroup(String name, int expectedNumMembers, ScimGroupMember... members) {
+    private ScimGroup createGroup(String name, ScimGroupMember... members) {
         ScimGroup g = new ScimGroup(name);
         List<ScimGroupMember> m = members != null ? Arrays.asList(members) : Collections.<ScimGroupMember> emptyList();
         g.setMembers(m);
         ScimGroup g1 = client.postForEntity(serverRunning.getUrl(groupEndpoint), g, ScimGroup.class).getBody();
         assertEquals(name, g1.getDisplayName());
-        assertEquals(expectedNumMembers, g1.getMembers().size());
+        assertEquals(m.size(), g1.getMembers().size());
         groupIds.add(g1.getId());
         return g1;
-    }
-
-    private ScimGroup createGroup(String name, ScimGroupMember... members) {
-        int expectedNumMembers = members != null ? Arrays.asList(members).size() : 0;
-        return createGroup(name, expectedNumMembers, members);
     }
 
     private ScimGroup updateGroup(String id, String name, ScimGroupMember... members) {
@@ -151,31 +160,24 @@ public class ScimGroupEndpointsIntegrationTests {
         List<ScimGroupMember> m = members != null ? Arrays.asList(members) : Collections.<ScimGroupMember> emptyList();
         g.setMembers(m);
         @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> r = client.exchange(serverRunning.getUrl(groupEndpoint + "/{id}"), HttpMethod.PUT,
+                        new HttpEntity<ScimGroup>(g, headers), Map.class, id);
+        logger.warn(r.getBody());
         ScimGroup g1 = client.exchange(serverRunning.getUrl(groupEndpoint + "/{id}"), HttpMethod.PUT,
-                new HttpEntity<ScimGroup>(g, headers), ScimGroup.class, id).getBody();
+                        new HttpEntity<ScimGroup>(g, headers), ScimGroup.class, id).getBody();
         assertEquals(name, g1.getDisplayName());
         assertEquals(m.size(), g1.getMembers().size());
         return g1;
     }
 
-    // XXX: This won't work until UAA is upgraded to spring 3.2-- 3.1 doesn't support PATCH
-    // private ScimGroup patchGroup(String id, ScimGroupMember addMember) {
-    //     HttpHeaders headers = new HttpHeaders();
-    //     headers.add("If-Match", "*");
-    //     ScimGroup g = new ScimGroup();
-    //     List<ScimGroupMember> m = Arrays.asList(addMember);
-    //     g.setMembers(m);
-    //     ScimGroup g1 = client.exchange(serverRunning.getUrl(groupEndpoint + "/{id}"), HttpMethod.PATCH,
-    //             new HttpEntity<ScimGroup>(g, headers), ScimGroup.class, id).getBody();
-    //     assertEquals(name, g1.getDisplayName());
-    //     // assertEquals(m.size(), g1.getMembers().size());
-    //     return g1;
-    // }
-
     private void validateUserGroups(String id, String... groups) {
         List<String> groupNames = groups != null ? Arrays.asList(groups) : Collections.<String> emptyList();
-        assertEquals(groupNames.size() + defaultGroups.size(), getUser(id).getGroups().size()); // there are 8 default
-                                                                                                // user groups
+        assertEquals(groupNames.size() + defaultGroups.size(), getUser(id).getGroups().size()); // there
+                                                                                                // are
+                                                                                                // 8
+                                                                                                // default
+                                                                                                // user
+                                                                                                // groups
                                                                                                 // configured
         for (ScimUser.Group g : getUser(id).getGroups()) {
             assertTrue(defaultGroups.contains(g.getDisplay()) || groupNames.contains(g.getDisplay()));
@@ -230,19 +232,6 @@ public class ScimGroupEndpointsIntegrationTests {
     }
 
     @Test
-    public void createGroupWithDuplicateMembersSucceeds() {
-        ScimGroup g1 = createGroup(CFID, 1, JOEL, JOEL, JOEL);
-        // Check we can GET the group
-        ScimGroup g2 = client.getForObject(serverRunning.getUrl(groupEndpoint + "/{id}"), ScimGroup.class, g1.getId());
-        assertEquals(g1, g2);
-        assertEquals(1, g2.getMembers().size());
-        assertTrue(g2.getMembers().contains(JOEL));
-
-        // check that User.groups is updated
-        validateUserGroups(JOEL.getMemberId(), CFID);
-    }
-
-    @Test
     public void createGroupWithInvalidMembersFailsCorrectly() {
         ScimGroup g = new ScimGroup(CFID);
         ScimGroupMember m2 = new ScimGroupMember("wrongid");
@@ -260,7 +249,7 @@ public class ScimGroupEndpointsIntegrationTests {
         // check that the group was not created
         @SuppressWarnings("unchecked")
         Map<String, String> g2 = client.getForObject(
-                serverRunning.getUrl(groupEndpoint + "?filter=displayName eq \"{name}\""), Map.class, CFID);
+                        serverRunning.getUrl(groupEndpoint + "?filter=displayName eq '{name}'"), Map.class, CFID);
         assertTrue(g2.containsKey("totalResults"));
         assertEquals(0, g2.get("totalResults"));
     }
@@ -301,7 +290,7 @@ public class ScimGroupEndpointsIntegrationTests {
         // check that the group does not exist anymore
         @SuppressWarnings("unchecked")
         Map<String, Object> g2 = client.getForObject(
-                serverRunning.getUrl(groupEndpoint + "?filter=displayName eq \"{name}\""), Map.class, DELETE_ME);
+                        serverRunning.getUrl(groupEndpoint + "?filter=displayName eq '{name}'"), Map.class, DELETE_ME);
         assertTrue(g2.containsKey("totalResults"));
         assertEquals(0, g2.get("totalResults"));
 
@@ -365,30 +354,14 @@ public class ScimGroupEndpointsIntegrationTests {
 
         ScimGroup g4 = updateGroup(g3.getId(), "new_name", m1);
 
-        // check that we did not create a new group, but only updated the existing one
+        // check that we did not create a new group, but only updated the
+        // existing one
         assertEquals(g3, g4);
         // check that member users were updated
         validateUserGroups(DALE.getMemberId(), CF_MGR);
         validateUserGroups(JOEL.getMemberId(), CFID, "new_name");
         validateUserGroups(VIDYA.getMemberId(), CFID, "new_name");
     }
-
-    // XXX: This won't work until UAA is upgraded to spring 3.2-- 3.1 doesn't support PATCH
-    // @Test
-    // public void testPatchGroupUpdatesMemberUsers() {
-    //     ScimGroup g1 = createGroup(CFID, JOEL, VIDYA);
-
-    //     ScimGroup g2 = patchGroup(g1.getId(), g1.getDisplayName(), DALE);
-
-    //     // check that member users were added
-    //     validateUserGroups(DALE.getMemberId(), CFID);
-    //     assertEquals(3, g3.getMembers().size());
-
-    //     // check can't add user twice
-    //     ScimGroup g3 = patchGroup(g2.getId(), g2.getDisplayName(), DALE);
-    //     validateUserGroups(DALE.getMemberId(), CFID);
-    //     assertEquals(3, g3.getMembers().size());
-    // }
 
     @Test
     public void testAccessTokenReflectsGroupMembership() throws Exception {
@@ -419,21 +392,23 @@ public class ScimGroupEndpointsIntegrationTests {
     }
 
     private void createTestClient(String name, String secret, String scope) throws Exception {
-        OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read clients.write");
+        OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read,clients.write");
         HttpHeaders headers = getAuthenticatedHeaders(token);
-        BaseClientDetails client = new BaseClientDetails(name, "", scope, "authorization_code,password", "scim.read,scim.write");
+        BaseClientDetails client = new BaseClientDetails(name, "", scope, "authorization_code,password",
+                        "scim.read,scim.write");
         client.setClientSecret(secret);
         ResponseEntity<Void> result = serverRunning.getRestTemplate().exchange(serverRunning.getUrl("/oauth/clients"),
-                HttpMethod.POST, new HttpEntity<BaseClientDetails>(client, headers), Void.class);
+                        HttpMethod.POST, new HttpEntity<BaseClientDetails>(client, headers), Void.class);
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
     }
 
     private void deleteTestClient(String clientId) throws Exception {
-        OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read clients.write");
+        OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read,clients.write");
         HttpHeaders headers = getAuthenticatedHeaders(token);
         ResponseEntity<Void> result = serverRunning.getRestTemplate().exchange(
-                serverRunning.getUrl("/oauth/clients/{client}"), HttpMethod.DELETE, new HttpEntity<Void>(headers),
-                Void.class, clientId);
+                        serverRunning.getUrl("/oauth/clients/{client}"), HttpMethod.DELETE,
+                        new HttpEntity<Void>(headers),
+                        Void.class, clientId);
         assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
@@ -449,7 +424,7 @@ public class ScimGroupEndpointsIntegrationTests {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Authorization",
-                "Basic " + new String(Base64.encode(String.format("%s:%s", clientId, clientSecret).getBytes())));
+                        "Basic " + new String(Base64.encode(String.format("%s:%s", clientId, clientSecret).getBytes())));
 
         @SuppressWarnings("rawtypes")
         ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData, headers);
@@ -469,7 +444,8 @@ public class ScimGroupEndpointsIntegrationTests {
         return headers;
     }
 
-    private OAuth2AccessToken getAccessTokenWithPassword(String clientId, String clientSecret, String username, String password) {
+    private OAuth2AccessToken getAccessTokenWithPassword(String clientId, String clientSecret, String username,
+                    String password) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
         formData.add("client_id", clientId);
         formData.add("grant_type", "password");
@@ -490,8 +466,8 @@ public class ScimGroupEndpointsIntegrationTests {
         headers.setAccept(Arrays.asList(MediaType.TEXT_HTML, MediaType.ALL));
 
         URI uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "code")
-                .queryParam("state", "mystateid").queryParam("client_id", clientId)
-                .queryParam("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc").build();
+                        .queryParam("state", "mystateid").queryParam("client_id", clientId)
+                        .queryParam("redirect_uri", "http://anywhere.com").build();
         ResponseEntity<Void> result = serverRunning.getForResponse(uri.toString(), headers);
         assertEquals(HttpStatus.FOUND, result.getStatusCode());
         String location = result.getHeaders().getLocation().toString();
@@ -537,11 +513,11 @@ public class ScimGroupEndpointsIntegrationTests {
             assertEquals(HttpStatus.FOUND, response.getStatusCode());
             location = response.getHeaders().getLocation().toString();
         }
-        assertTrue("Wrong location: " + location, location.matches("https://uaa.cloudfoundry.com/redirect/vmc" + ".*code=.+"));
+        assertTrue("Wrong location: " + location, location.matches("http://anywhere.com" + ".*code=.+"));
 
         formData.clear();
         formData.add("client_id", clientId);
-        formData.add("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc");
+        formData.add("redirect_uri", "http://anywhere.com");
         formData.add("grant_type", "authorization_code");
         formData.add("code", location.split("code=")[1].split("&")[0]);
         HttpHeaders tokenHeaders = new HttpHeaders();

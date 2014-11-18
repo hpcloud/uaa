@@ -1,36 +1,37 @@
-/**
- * Cloud Foundry 2012.02.03 Beta Copyright (c) [2009-2012] VMware, Inc. All Rights Reserved.
+/*******************************************************************************
+ *     Cloud Foundry 
+ *     Copyright (c) [2009-2014] Pivotal Software, Inc. All Rights Reserved.
  *
- * This product is licensed to you under the Apache License, Version 2.0 (the "License"). You may not use this product
- * except in compliance with the License.
+ *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
+ *     You may not use this product except in compliance with the License.
  *
- * This product includes a number of subcomponents with separate copyright notices and license terms. Your use of these
- * subcomponents is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
- */
+ *     This product includes a number of subcomponents with
+ *     separate copyright notices and license terms. Your use of these
+ *     subcomponents is subject to the terms and conditions of the
+ *     subcomponent's license, as noted in the LICENSE file.
+ *******************************************************************************/
 package org.cloudfoundry.identity.uaa.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.cloudfoundry.identity.uaa.oauth.approval.Approval;
-import org.cloudfoundry.identity.uaa.oauth.approval.Approval.ApprovalStatus;
 import org.cloudfoundry.identity.uaa.test.TestAccountSetup;
 import org.cloudfoundry.identity.uaa.test.UaaTestAccounts;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.jwt.JwtHelper;
+import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordResourceDetails;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -55,80 +56,99 @@ public class RefreshTokenSupportIntegrationTests {
     @Before
     public void init() {
         resource = testAccounts.getDefaultResourceOwnerPasswordResource();
+
     }
 
-    /**
-     * tests a happy-day flow of the refresh token grant
-     */
     @Test
-    public void testTokenRefreshed() throws Exception {
+    public void testTokenRefreshedCorrectFlow() throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        // TODO: should be able to handle just TEXT_HTML
+        headers.setAccept(Arrays.asList(MediaType.TEXT_HTML, MediaType.ALL));
 
-        // XXX Not sure what the point of this block is. Approvals not supported in AOK
-        // // add an approval for the scope requested
-        // {
-        //     MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-        //     formData.add("grant_type", "password");
-        //     formData.add("username", resource.getUsername());
-        //     formData.add("password", resource.getPassword());
-        //     formData.add("scope", "cloud_controller.read");
-        //     HttpHeaders headers = new HttpHeaders();
-        //     headers.set("Authorization",
-        //             testAccounts.getAuthorizationHeader(resource.getClientId(), resource.getClientSecret()));
-        //     headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        //     @SuppressWarnings("rawtypes")
-        //     ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData, headers);
-        //     assertEquals(HttpStatus.OK, response.getStatusCode());
-        //     assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
+        AuthorizationCodeResourceDetails resource = testAccounts.getDefaultAuthorizationCodeResource();
 
-        //     @SuppressWarnings("unchecked")
-        //     OAuth2AccessToken accessToken = DefaultOAuth2AccessToken.valueOf(response.getBody());
+        URI uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "code")
+                        .queryParam("state", "mystateid").queryParam("client_id", resource.getClientId())
+                        .queryParam("redirect_uri", resource.getPreEstablishedRedirectUri()).build();
+        ResponseEntity<Void> result = serverRunning.getForResponse(uri.toString(), headers);
+        assertEquals(HttpStatus.FOUND, result.getStatusCode());
+        String location = result.getHeaders().getLocation().toString();
 
-        //     HttpHeaders approvalHeaders = new HttpHeaders();
-        //     approvalHeaders.set("Authorization", "bearer " + accessToken.getValue());
-        //     ResponseEntity<Approval[]> approvals = serverRunning.getRestTemplate().exchange(
-        //             serverRunning.getUrl("/approvals"),
-        //             HttpMethod.PUT,
-        //             new HttpEntity<Approval[]>((new Approval[]{new Approval(resource.getUsername(), resource.getClientId(),
-        //                     "cloud_controller.read", 50000, ApprovalStatus.APPROVED)}), approvalHeaders), Approval[].class);
+        if (result.getHeaders().containsKey("Set-Cookie")) {
+            String cookie = result.getHeaders().getFirst("Set-Cookie");
+            headers.set("Cookie", cookie);
+        }
 
-        //     assertEquals(HttpStatus.OK, approvals.getStatusCode());
-        // }
+        ResponseEntity<String> response = serverRunning.getForString(location, headers);
+        // should be directed to the login screen...
+        assertTrue(response.getBody().contains("/login.do"));
+        assertTrue(response.getBody().contains("username"));
+        assertTrue(response.getBody().contains("password"));
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-        formData.add("grant_type", "password");
-        formData.add("username", resource.getUsername());
-        formData.add("password", resource.getPassword());
-        formData.add("scope", "cloud_controller.read");
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization",
-                testAccounts.getAuthorizationHeader(resource.getClientId(), resource.getClientSecret()));
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        formData.add("username", testAccounts.getUserName());
+        formData.add("password", testAccounts.getPassword());
+
+        // Should be redirected to the original URL, but now authenticated
+        result = serverRunning.postForResponse("/login.do", headers, formData);
+        assertEquals(HttpStatus.FOUND, result.getStatusCode());
+
+        if (result.getHeaders().containsKey("Set-Cookie")) {
+            String cookie = result.getHeaders().getFirst("Set-Cookie");
+            headers.set("Cookie", cookie);
+        }
+
+        response = serverRunning.getForString(result.getHeaders().getLocation().toString(), headers);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            // The grant access page should be returned
+            assertTrue(response.getBody().contains("Do you authorize"));
+
+            formData.clear();
+            formData.add("user_oauth_approval", "true");
+            result = serverRunning.postForResponse("/oauth/authorize", headers, formData);
+            assertEquals(HttpStatus.FOUND, result.getStatusCode());
+            location = result.getHeaders().getLocation().toString();
+        }
+        else {
+            // Token cached so no need for second approval
+            assertEquals(HttpStatus.FOUND, response.getStatusCode());
+            location = response.getHeaders().getLocation().toString();
+        }
+        assertTrue("Wrong location: " + location,
+                        location.matches(resource.getPreEstablishedRedirectUri() + ".*code=.+"));
+
+        formData.clear();
+        formData.add("client_id", resource.getClientId());
+        formData.add("redirect_uri", resource.getPreEstablishedRedirectUri());
+        formData.add("grant_type", "authorization_code");
+        formData.add("code", location.split("code=")[1].split("&")[0]);
+        HttpHeaders tokenHeaders = new HttpHeaders();
+        tokenHeaders.set("Authorization",
+                        testAccounts.getAuthorizationHeader(resource.getClientId(), resource.getClientSecret()));
         @SuppressWarnings("rawtypes")
-        ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData, headers);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
+        ResponseEntity<Map> tokenResponse = serverRunning.postForMap("/oauth/token", formData, tokenHeaders);
+        assertEquals(HttpStatus.OK, tokenResponse.getStatusCode());
 
         @SuppressWarnings("unchecked")
-        OAuth2AccessToken accessToken = DefaultOAuth2AccessToken.valueOf(response.getBody());
+        OAuth2AccessToken accessToken = DefaultOAuth2AccessToken.valueOf(tokenResponse.getBody());
 
-        // now use the refresh token to get a new access token.
-        assertNotNull(accessToken.getRefreshToken());
-
+        // get the refresh token
         formData = new LinkedMultiValueMap<String, String>();
         formData.add("grant_type", "refresh_token");
         formData.add("refresh_token", accessToken.getRefreshToken().getValue());
-        response = serverRunning.postForMap("/oauth/token", formData, headers);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("no-store", response.getHeaders().getFirst("Cache-Control"));
+        tokenResponse = serverRunning.postForMap("/oauth/token", formData, tokenHeaders);
+        assertEquals(HttpStatus.OK, tokenResponse.getStatusCode());
+        assertEquals("no-store", tokenResponse.getHeaders().getFirst("Cache-Control"));
         @SuppressWarnings("unchecked")
-        OAuth2AccessToken newAccessToken = DefaultOAuth2AccessToken.valueOf(response.getBody());
+        OAuth2AccessToken newAccessToken = DefaultOAuth2AccessToken.valueOf(tokenResponse.getBody());
         try {
             JwtHelper.decode(newAccessToken.getValue());
         } catch (IllegalArgumentException e) {
             fail("Refreshed token was not a JWT");
         }
         assertFalse("New access token should be different to the old one.",
-                newAccessToken.getValue().equals(accessToken.getValue()));
+                        newAccessToken.getValue().equals(accessToken.getValue()));
 
     }
+
 }

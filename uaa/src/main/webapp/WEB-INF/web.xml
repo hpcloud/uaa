@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!-- Cloud Foundry 2012.02.03 Beta Copyright (c) [2009-2012] VMware, Inc. All Rights Reserved. This product is licensed to 
-	you under the Apache License, Version 2.0 (the "License"). You may not use this product except in compliance with the License. 
-	This product includes a number of subcomponents with separate copyright notices and license terms. Your use of these subcomponents 
-	is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file. -->
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+<!--
+    Cloud Foundry 
+    Copyright (c) [2009-2014] Pivotal Software, Inc. All Rights Reserved.
 
+    This product is licensed to you under the Apache License, Version 2.0 (the "License").
+    You may not use this product except in compliance with the License.
+
+    This product includes a number of subcomponents with
+    separate copyright notices and license terms. Your use of these
+    subcomponents is subject to the terms and conditions of the
+    subcomponent's license, as noted in the LICENSE file.
+
+-->
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0"
+    metadata-complete="true">
+    <absolute-ordering/>
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -27,6 +37,10 @@
 			<param-name>contextInitializerClasses</param-name>
 			<param-value>org.cloudfoundry.identity.uaa.config.YamlServletProfileInitializer</param-value>
 		</init-param>
+        <init-param>
+            <param-name>environmentConfigDefaults</param-name>
+            <param-value>uaa.yml</param-value>
+        </init-param>
 		<init-param>
 			<param-name>environmentConfigLocations</param-name>
 			<param-value>${UAA_CONFIG_URL},file:${UAA_CONFIG_PATH}/uaa.yml,file:${CLOUD_FOUNDRY_CONFIG_PATH}/uaa.yml</param-value>

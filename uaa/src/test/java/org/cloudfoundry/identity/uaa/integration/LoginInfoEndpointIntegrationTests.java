@@ -1,15 +1,15 @@
-/*
- * Cloud Foundry 2012.02.03 Beta
- * Copyright (c) [2009-2012] VMware, Inc. All Rights Reserved.
+/*******************************************************************************
+ *     Cloud Foundry 
+ *     Copyright (c) [2009-2014] Pivotal Software, Inc. All Rights Reserved.
  *
- * This product is licensed to you under the Apache License, Version 2.0 (the "License").
- * You may not use this product except in compliance with the License.
+ *     This product is licensed to you under the Apache License, Version 2.0 (the "License").
+ *     You may not use this product except in compliance with the License.
  *
- * This product includes a number of subcomponents with
- * separate copyright notices and license terms. Your use of these
- * subcomponents is subject to the terms and conditions of the
- * subcomponent's license, as noted in the LICENSE file.
- */
+ *     This product includes a number of subcomponents with
+ *     separate copyright notices and license terms. Your use of these
+ *     subcomponents is subject to the terms and conditions of the
+ *     subcomponent's license, as noted in the LICENSE file.
+ *******************************************************************************/
 package org.cloudfoundry.identity.uaa.integration;
 
 import static org.junit.Assert.assertEquals;
@@ -58,24 +58,12 @@ public class LoginInfoEndpointIntegrationTests {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
-
-        HttpStatus status = HttpStatus.FOUND;
-        String location = "/login";
-        ResponseEntity<Void> response = null;
-        while (status == HttpStatus.FOUND) {
-            response = serverRunning.getForResponse(location, headers);
-            status = response.getStatusCode();
-            if (status == HttpStatus.FOUND) {
-                location = response.getHeaders().getLocation().toString();
-                System.err.println("Redirected to " + location);
-            }
-        }
-
-        ResponseEntity<String> finalResponse = serverRunning.getForString(location, headers);
-        String body = finalResponse.getBody().toString();
+        ResponseEntity<String> response = serverRunning.getForString("/login", headers);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        String body = response.getBody();
         // System.err.println(body);
         assertNotNull(body);
-        assertTrue("Wrong body: "+body, body.contains("<form id="));
+        assertTrue("Wrong body: " + body, body.contains("<form id="));
 
     }
 
