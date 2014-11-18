@@ -42,137 +42,137 @@ import org.springframework.util.MultiValueMap;
  */
 public class CheckTokenEndpointIntegrationTests {
 
-	@Rule
-	public ServerRunning serverRunning = ServerRunning.isRunning();
+    @Rule
+    public ServerRunning serverRunning = ServerRunning.isRunning();
 
-	private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
+    private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
 
-	@Rule
-	public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
+    @Rule
+    public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
 
-	@Test
-	public void testDecodeToken() throws Exception {
+    @Test
+    public void testDecodeToken() throws Exception {
 
- 		// XXX: Not sure what the point of this block is. Approvals not implemented in AOK
-		// {
-		// 	MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		// 	formData.add("grant_type", "password");
-		// 	formData.add("username", testAccounts.getUserName());
-		// 	formData.add("password", testAccounts.getPassword());
-		// 	formData.add("scope", "cloud_controller.read");
+         // XXX: Not sure what the point of this block is. Approvals not implemented in AOK
+        // {
+        //     MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        //     formData.add("grant_type", "password");
+        //     formData.add("username", testAccounts.getUserName());
+        //     formData.add("password", testAccounts.getPassword());
+        //     formData.add("scope", "cloud_controller.read");
 
-		// 	HttpHeaders headers = new HttpHeaders();
-		// 	ResourceOwnerPasswordResourceDetails app = testAccounts.getDefaultResourceOwnerPasswordResource();
-		// 	headers.set("Authorization", testAccounts.getAuthorizationHeader(app.getClientId(), app.getClientSecret()));
-		// 	headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        //     HttpHeaders headers = new HttpHeaders();
+        //     ResourceOwnerPasswordResourceDetails app = testAccounts.getDefaultResourceOwnerPasswordResource();
+        //     headers.set("Authorization", testAccounts.getAuthorizationHeader(app.getClientId(), app.getClientSecret()));
+        //     headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
-		// 	//Get an access token to add an approval
-		// 	@SuppressWarnings("rawtypes")
-		// 	ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData, headers);
-		// 	assertEquals(HttpStatus.OK, response.getStatusCode());
-		// 	String token = (String) response.getBody().get("access_token");
+        //     //Get an access token to add an approval
+        //     @SuppressWarnings("rawtypes")
+        //     ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData, headers);
+        //     assertEquals(HttpStatus.OK, response.getStatusCode());
+        //     String token = (String) response.getBody().get("access_token");
 
-		// 	// add an approval for the scope requested
-		// 	HttpHeaders approvalHeaders = new HttpHeaders();
-		// 	approvalHeaders.set("Authorization", "bearer " + token);
-		// 	ResponseEntity<Approval[]> approvals = serverRunning.getRestTemplate().exchange(
-		// 			serverRunning.getUrl("/approvals"),
-		// 			HttpMethod.PUT,
-		// 			new HttpEntity<Approval[]>((new Approval[]{new Approval(testAccounts.getUserName(), "app",
-		// 					"cloud_controller.read", 50000, ApprovalStatus.APPROVED)}), approvalHeaders), Approval[].class);
+        //     // add an approval for the scope requested
+        //     HttpHeaders approvalHeaders = new HttpHeaders();
+        //     approvalHeaders.set("Authorization", "bearer " + token);
+        //     ResponseEntity<Approval[]> approvals = serverRunning.getRestTemplate().exchange(
+        //             serverRunning.getUrl("/approvals"),
+        //             HttpMethod.PUT,
+        //             new HttpEntity<Approval[]>((new Approval[]{new Approval(testAccounts.getUserName(), "app",
+        //                     "cloud_controller.read", 50000, ApprovalStatus.APPROVED)}), approvalHeaders), Approval[].class);
 
-		// 	assertEquals(HttpStatus.OK, approvals.getStatusCode());
-		// }
+        //     assertEquals(HttpStatus.OK, approvals.getStatusCode());
+        // }
 
-		// Get a fresh access token
-		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("grant_type", "password");
-		formData.add("username", testAccounts.getUserName());
-		formData.add("password", testAccounts.getPassword());
-		formData.add("scope", "cloud_controller.read");
+        // Get a fresh access token
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        formData.add("grant_type", "password");
+        formData.add("username", testAccounts.getUserName());
+        formData.add("password", testAccounts.getPassword());
+        formData.add("scope", "cloud_controller.read");
 
-		HttpHeaders headers = new HttpHeaders();
-		ResourceOwnerPasswordResourceDetails app = testAccounts.getDefaultResourceOwnerPasswordResource();
-		headers.set("Authorization", testAccounts.getAuthorizationHeader(app.getClientId(), app.getClientSecret()));
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        HttpHeaders headers = new HttpHeaders();
+        ResourceOwnerPasswordResourceDetails app = testAccounts.getDefaultResourceOwnerPasswordResource();
+        headers.set("Authorization", testAccounts.getAuthorizationHeader(app.getClientId(), app.getClientSecret()));
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
-		//Get an access token to add an approval
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData, headers);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		String token = (String) response.getBody().get("access_token");
+        //Get an access token to add an approval
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData, headers);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        String token = (String) response.getBody().get("access_token");
 
-		formData = new LinkedMultiValueMap<String, String>();
-		ClientCredentialsResourceDetails resource = testAccounts.getClientCredentialsResource("app", null, "app", "appclientsecret");
-		headers.set("Authorization", testAccounts.getAuthorizationHeader(resource.getClientId(), resource.getClientSecret()));
-		formData.add("token", token);
+        formData = new LinkedMultiValueMap<String, String>();
+        ClientCredentialsResourceDetails resource = testAccounts.getClientCredentialsResource("app", null, "app", "appclientsecret");
+        headers.set("Authorization", testAccounts.getAuthorizationHeader(resource.getClientId(), resource.getClientSecret()));
+        formData.add("token", token);
 
-		response = serverRunning.postForMap("/check_token", formData, headers);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		System.err.println(response.getBody());
+        response = serverRunning.postForMap("/check_token", formData, headers);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        System.err.println(response.getBody());
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> map = response.getBody();
-		assertEquals(testAccounts.getUserName(), map.get("user_name"));
-		assertEquals(testAccounts.getEmail(), map.get("email"));
+        @SuppressWarnings("unchecked")
+        Map<String, String> map = response.getBody();
+        assertEquals(testAccounts.getUserName(), map.get("user_name"));
+        assertEquals(testAccounts.getEmail(), map.get("email"));
 
-	}
+    }
 
-	/* XXX: Not implemented in AOK
-	@Test
-	public void testTokenKey() throws Exception {
+    /* XXX: Not implemented in AOK
+    @Test
+    public void testTokenKey() throws Exception {
 
-		HttpHeaders headers = new HttpHeaders();
-		ClientCredentialsResourceDetails resource = testAccounts.getClientCredentialsResource("app", null, "app", "appclientsecret");
-		headers.set("Authorization", testAccounts.getAuthorizationHeader(resource.getClientId(), resource.getClientSecret()));
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        HttpHeaders headers = new HttpHeaders();
+        ClientCredentialsResourceDetails resource = testAccounts.getClientCredentialsResource("app", null, "app", "appclientsecret");
+        headers.set("Authorization", testAccounts.getAuthorizationHeader(resource.getClientId(), resource.getClientSecret()));
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.getForObject("/token_key", Map.class, headers);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		@SuppressWarnings("unchecked")
-		Map<String, String> map = response.getBody();
-		// System.err.println(map);
-		assertNotNull(map.get("alg"));
-		assertNotNull(map.get("value"));
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.getForObject("/token_key", Map.class, headers);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        @SuppressWarnings("unchecked")
+        Map<String, String> map = response.getBody();
+        // System.err.println(map);
+        assertNotNull(map.get("alg"));
+        assertNotNull(map.get("value"));
 
-	}*/
+    }*/
 
-	@Test
-	public void testUnauthorized() throws Exception {
+    @Test
+    public void testUnauthorized() throws Exception {
 
-		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("token", "FOO");
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        formData.add("token", "FOO");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.postForMap("/check_token", formData, headers);
-		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.postForMap("/check_token", formData, headers);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> map = response.getBody();
-		assertTrue(map.containsKey("error"));
+        @SuppressWarnings("unchecked")
+        Map<String, String> map = response.getBody();
+        assertTrue(map.containsKey("error"));
 
-	}
+    }
 
-	@Test
-	public void testForbidden() throws Exception {
+    @Test
+    public void testForbidden() throws Exception {
 
-		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("token", "FOO");
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization", "Basic " + new String(Base64.encode("vmc:".getBytes("UTF-8"))));
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        formData.add("token", "FOO");
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Basic " + new String(Base64.encode("vmc:".getBytes("UTF-8"))));
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.postForMap("/check_token", formData, headers);
-		assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.postForMap("/check_token", formData, headers);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> map = response.getBody();
-		assertTrue(map.containsKey("error"));
+        @SuppressWarnings("unchecked")
+        Map<String, String> map = response.getBody();
+        assertTrue(map.containsKey("error"));
 
-	}
+    }
 
 }
