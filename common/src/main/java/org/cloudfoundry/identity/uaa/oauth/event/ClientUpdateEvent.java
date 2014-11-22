@@ -25,14 +25,14 @@ import org.springframework.security.oauth2.provider.ClientDetails;
  */
 public class ClientUpdateEvent extends AbstractClientAdminEvent {
 
-	public ClientUpdateEvent(ClientDetails client, Principal principal) {
-		super(client, principal);
-	}
+    public ClientUpdateEvent(ClientDetails client, Principal principal) {
+        super(client, principal);
+    }
 
-	@Override
-	public AuditEvent getAuditEvent() {
-		return createAuditRecord(getClient().getClientId(), AuditEventType.ClientUpdateSuccess,
-				getOrigin(getPrincipal()));
-	}
+    @Override
+    public AuditEvent getAuditEvent() {
+        return createAuditRecord(getClient().getClientId(), AuditEventType.ClientUpdateSuccess,
+                getOrigin(getPrincipal()));
+    }
 
 }

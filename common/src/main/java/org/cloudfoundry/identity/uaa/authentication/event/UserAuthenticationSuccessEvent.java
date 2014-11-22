@@ -23,17 +23,17 @@ import org.springframework.util.Assert;
  * @author Dave Syer
  */
 public class UserAuthenticationSuccessEvent extends AbstractUaaAuthenticationEvent {
-	private final UaaUser user;
+    private final UaaUser user;
 
-	public UserAuthenticationSuccessEvent(UaaUser user, Authentication authentication) {
-		super(authentication);
-		this.user = user;
-	}
+    public UserAuthenticationSuccessEvent(UaaUser user, Authentication authentication) {
+        super(authentication);
+        this.user = user;
+    }
 
-	@Override
-	public AuditEvent getAuditEvent() {
-		Assert.notNull(user, "UaaUser cannot be null");
-		return createAuditRecord(user.getId(), AuditEventType.UserAuthenticationSuccess,
-				getOrigin(getAuthenticationDetails()), user.getUsername());
-	}
+    @Override
+    public AuditEvent getAuditEvent() {
+        Assert.notNull(user, "UaaUser cannot be null");
+        return createAuditRecord(user.getId(), AuditEventType.UserAuthenticationSuccess,
+                getOrigin(getAuthenticationDetails()), user.getUsername());
+    }
 }

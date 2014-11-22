@@ -25,14 +25,14 @@ import org.springframework.security.oauth2.provider.ClientDetails;
  */
 public class SecretChangeEvent extends AbstractClientAdminEvent {
 
-	public SecretChangeEvent(ClientDetails client, Principal principal) {
-		super(client, principal);
-	}
+    public SecretChangeEvent(ClientDetails client, Principal principal) {
+        super(client, principal);
+    }
 
-	@Override
-	public AuditEvent getAuditEvent() {
-		return createAuditRecord(getClient().getClientId(), AuditEventType.SecretChangeSuccess,
-				getOrigin(getPrincipal()), "secret changed");
-	}
+    @Override
+    public AuditEvent getAuditEvent() {
+        return createAuditRecord(getClient().getClientId(), AuditEventType.SecretChangeSuccess,
+                getOrigin(getPrincipal()), "secret changed");
+    }
 
 }

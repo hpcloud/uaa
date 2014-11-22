@@ -25,21 +25,21 @@ import org.springframework.security.core.Authentication;
 
 public class AuthzAuthenticationFilterTests {
 
-	@Test
-	public void authenticatesValidUser() throws Exception {
+    @Test
+    public void authenticatesValidUser() throws Exception {
 
-		String msg = "{ \"username\":\"marissa\", \"password\":\"koala\"}";
+        String msg = "{ \"username\":\"marissa\", \"password\":\"koala\"}";
 
-		AuthenticationManager am = mock(AuthenticationManager.class);
-		Authentication result = mock(Authentication.class);
-		when(am.authenticate(any(AuthzAuthenticationRequest.class))).thenReturn(result);
-		AuthzAuthenticationFilter filter = new AuthzAuthenticationFilter(am);
+        AuthenticationManager am = mock(AuthenticationManager.class);
+        Authentication result = mock(Authentication.class);
+        when(am.authenticate(any(AuthzAuthenticationRequest.class))).thenReturn(result);
+        AuthzAuthenticationFilter filter = new AuthzAuthenticationFilter(am);
 
-		MockHttpServletRequest request = new MockHttpServletRequest("POST", "/oauth/authorize");
-		request.setParameter("credentials", msg);
-		MockHttpServletResponse response = new MockHttpServletResponse();
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/oauth/authorize");
+        request.setParameter("credentials", msg);
+        MockHttpServletResponse response = new MockHttpServletResponse();
 
-		filter.doFilter(request, response, new MockFilterChain());
-		
-	}
+        filter.doFilter(request, response, new MockFilterChain());
+        
+    }
 }

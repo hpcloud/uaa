@@ -28,18 +28,18 @@ import org.junit.Test;
  */
 public class MessageTests {
 
-	@Test
-	public void testSerialize() throws Exception {
-		StringWriter writer = new StringWriter();
-		new ObjectMapper().writeValue(writer, new SimpleMessage("ok", "done"));
-		assertEquals("{\"status\":\"ok\",\"message\":\"done\"}", writer.toString());
-	}
+    @Test
+    public void testSerialize() throws Exception {
+        StringWriter writer = new StringWriter();
+        new ObjectMapper().writeValue(writer, new SimpleMessage("ok", "done"));
+        assertEquals("{\"status\":\"ok\",\"message\":\"done\"}", writer.toString());
+    }
 
-	@Test
-	public void testDeserialize() throws Exception {
-		String value = "{\"status\":\"ok\",\"message\":\"done\"}";
-		SimpleMessage message = new ObjectMapper().readValue(value, SimpleMessage.class);
-		assertEquals(new SimpleMessage("ok", "done"), message);
-	}
+    @Test
+    public void testDeserialize() throws Exception {
+        String value = "{\"status\":\"ok\",\"message\":\"done\"}";
+        SimpleMessage message = new ObjectMapper().readValue(value, SimpleMessage.class);
+        assertEquals(new SimpleMessage("ok", "done"), message);
+    }
 
 }

@@ -32,26 +32,26 @@ import org.springframework.util.StringUtils;
  */
 public class JsonAwareAccessDeniedHandler implements AccessDeniedHandler {
 
-	@Override
-	public void handle(HttpServletRequest request, HttpServletResponse response,
-			AccessDeniedException authException) throws IOException, ServletException {
-		String accept = request.getHeader("Accept");
-		boolean json = false;
-		if (StringUtils.hasText(accept)) {
-			for (MediaType mediaType : MediaType.parseMediaTypes(accept)) {
-				if (mediaType.includes(MediaType.APPLICATION_JSON)) {
-					json = true;
-					break;
-				}
-			}
-		}
-		if (json) {
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-			response.getWriter().append(String.format("{\"error\":\"%s\"}", authException.getMessage()));
-		} else {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, authException.getMessage());			
-		}
-	}
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response,
+            AccessDeniedException authException) throws IOException, ServletException {
+        String accept = request.getHeader("Accept");
+        boolean json = false;
+        if (StringUtils.hasText(accept)) {
+            for (MediaType mediaType : MediaType.parseMediaTypes(accept)) {
+                if (mediaType.includes(MediaType.APPLICATION_JSON)) {
+                    json = true;
+                    break;
+                }
+            }
+        }
+        if (json) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().append(String.format("{\"error\":\"%s\"}", authException.getMessage()));
+        } else {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, authException.getMessage());            
+        }
+    }
 
 }

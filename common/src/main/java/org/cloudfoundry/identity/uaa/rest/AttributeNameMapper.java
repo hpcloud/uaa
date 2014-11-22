@@ -5,12 +5,12 @@ package org.cloudfoundry.identity.uaa.rest;
  */
 public interface AttributeNameMapper {
 
-	String mapToInternal(String attr);
+    String mapToInternal(String attr);
 
-	String[] mapToInternal(String[] attr);
+    String[] mapToInternal(String[] attr);
 
-	String mapFromInternal(String attr);
+    String mapFromInternal(String attr);
 
-	String[] mapFromInternal(String[] attr);
+    String[] mapFromInternal(String[] attr);
 
 }

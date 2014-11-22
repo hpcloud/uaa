@@ -36,69 +36,69 @@ import org.springframework.util.StringUtils;
  */
 public class JdbcUaaUserDatabase implements UaaUserDatabase {
 
-	public static final String USER_FIELDS = "id,username,password,email,givenName,familyName,created,lastModified ";
+    public static final String USER_FIELDS = "id,username,password,email,givenName,familyName,created,lastModified ";
 
-	public static final String DEFAULT_USER_BY_USERNAME_QUERY = "select " + USER_FIELDS + "from users "
-			+ "where lower(username) = ? and active=?";
+    public static final String DEFAULT_USER_BY_USERNAME_QUERY = "select " + USER_FIELDS + "from users "
+            + "where lower(username) = ? and active=?";
 
-	public static final String DEFAULT_USER_AUTHORITIES_QUERY = "select authorities from users where id = ?";
+    public static final String DEFAULT_USER_AUTHORITIES_QUERY = "select authorities from users where id = ?";
 
-	private String userAuthoritiesQuery = DEFAULT_USER_AUTHORITIES_QUERY;
+    private String userAuthoritiesQuery = DEFAULT_USER_AUTHORITIES_QUERY;
 
-	private String userByUserNameQuery = DEFAULT_USER_BY_USERNAME_QUERY;
+    private String userByUserNameQuery = DEFAULT_USER_BY_USERNAME_QUERY;
 
-	private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
-	private final RowMapper<UaaUser> mapper = new UaaUserRowMapper();
+    private final RowMapper<UaaUser> mapper = new UaaUserRowMapper();
 
-	private Set<String> defaultAuthorities = new HashSet<String>();
+    private Set<String> defaultAuthorities = new HashSet<String>();
 
-	public void setUserByUserNameQuery(String userByUserNameQuery) {
-		this.userByUserNameQuery = userByUserNameQuery;
-	}
+    public void setUserByUserNameQuery(String userByUserNameQuery) {
+        this.userByUserNameQuery = userByUserNameQuery;
+    }
 
-	public void setUserAuthoritiesQuery(String userAuthoritiesQuery) {
-		this.userAuthoritiesQuery = userAuthoritiesQuery;
-	}
+    public void setUserAuthoritiesQuery(String userAuthoritiesQuery) {
+        this.userAuthoritiesQuery = userAuthoritiesQuery;
+    }
 
-	public void setDefaultAuthorities(Set<String> defaultAuthorities) {
-		this.defaultAuthorities = defaultAuthorities;
-	}
+    public void setDefaultAuthorities(Set<String> defaultAuthorities) {
+        this.defaultAuthorities = defaultAuthorities;
+    }
 
-	public JdbcUaaUserDatabase(JdbcTemplate jdbcTemplate) {
-		Assert.notNull(jdbcTemplate);
-		this.jdbcTemplate = jdbcTemplate;
-	}
+    public JdbcUaaUserDatabase(JdbcTemplate jdbcTemplate) {
+        Assert.notNull(jdbcTemplate);
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-	@Override
-	public UaaUser retrieveUserByName(String username) throws UsernameNotFoundException {
-		try {
-			return jdbcTemplate.queryForObject(userByUserNameQuery, mapper, username.toLowerCase(Locale.US), true);
-		}
-		catch (EmptyResultDataAccessException e) {
-			throw new UsernameNotFoundException(username);
-		}
-	}
+    @Override
+    public UaaUser retrieveUserByName(String username) throws UsernameNotFoundException {
+        try {
+            return jdbcTemplate.queryForObject(userByUserNameQuery, mapper, username.toLowerCase(Locale.US), true);
+        }
+        catch (EmptyResultDataAccessException e) {
+            throw new UsernameNotFoundException(username);
+        }
+    }
 
-	private final class UaaUserRowMapper implements RowMapper<UaaUser> {
-		@Override
-		public UaaUser mapRow(ResultSet rs, int rowNum) throws SQLException {
-			String id = rs.getString(1);
-			List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(getAuthorities(id));
-			return new UaaUser(id, rs.getString(2), rs.getString(3), rs.getString(4),
-					authorities, rs.getString(5), rs.getString(6),
-					rs.getTimestamp(7), rs.getTimestamp(8));
-		}
+    private final class UaaUserRowMapper implements RowMapper<UaaUser> {
+        @Override
+        public UaaUser mapRow(ResultSet rs, int rowNum) throws SQLException {
+            String id = rs.getString(1);
+            List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(getAuthorities(id));
+            return new UaaUser(id, rs.getString(2), rs.getString(3), rs.getString(4),
+                    authorities, rs.getString(5), rs.getString(6),
+                    rs.getTimestamp(7), rs.getTimestamp(8));
+        }
 
-		private String getAuthorities(final String userId) {
-			List<String> authorities;
-			try {
-				authorities = jdbcTemplate.queryForList(userAuthoritiesQuery, String.class, userId);
-			} catch (EmptyResultDataAccessException ex) {
-				authorities = Collections.<String>emptyList();
-			}
-			authorities.addAll(defaultAuthorities);
-			return StringUtils.collectionToCommaDelimitedString(new HashSet<String>(authorities));
-		}
-	}
+        private String getAuthorities(final String userId) {
+            List<String> authorities;
+            try {
+                authorities = jdbcTemplate.queryForList(userAuthoritiesQuery, String.class, userId);
+            } catch (EmptyResultDataAccessException ex) {
+                authorities = Collections.<String>emptyList();
+            }
+            authorities.addAll(defaultAuthorities);
+            return StringUtils.collectionToCommaDelimitedString(new HashSet<String>(authorities));
+        }
+    }
 }

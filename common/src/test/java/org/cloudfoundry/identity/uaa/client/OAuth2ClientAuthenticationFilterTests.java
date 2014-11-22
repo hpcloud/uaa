@@ -33,49 +33,49 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
  */
 public class OAuth2ClientAuthenticationFilterTests {
 
-	private SocialClientUserDetailsSource filter = new SocialClientUserDetailsSource();
+    private SocialClientUserDetailsSource filter = new SocialClientUserDetailsSource();
 
-	private OAuth2ClientContext context = new DefaultOAuth2ClientContext();
+    private OAuth2ClientContext context = new DefaultOAuth2ClientContext();
 
-	private void setUpContext(String tokenName) {
-		String accessToken = System.getProperty(tokenName);
-		Assume.assumeNotNull(accessToken);
-		context.setAccessToken(new DefaultOAuth2AccessToken(accessToken));
-	}
+    private void setUpContext(String tokenName) {
+        String accessToken = System.getProperty(tokenName);
+        Assume.assumeNotNull(accessToken);
+        context.setAccessToken(new DefaultOAuth2AccessToken(accessToken));
+    }
 
-	@Test
-	public void testCloudFoundryAuthentication() throws Exception {
-		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(new AuthorizationCodeResourceDetails(), context);
-		setUpContext("cf.token");
-		filter.setRestTemplate(restTemplate);
-		filter.setUserInfoUrl("https://uaa.cloudfoundry.com/userinfo");
-		filter.afterPropertiesSet();
-		SocialClientUserDetails user = (SocialClientUserDetails) filter.getPrincipal();
-		assertTrue(!user.getAuthorities().isEmpty());
-	}
+    @Test
+    public void testCloudFoundryAuthentication() throws Exception {
+        OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(new AuthorizationCodeResourceDetails(), context);
+        setUpContext("cf.token");
+        filter.setRestTemplate(restTemplate);
+        filter.setUserInfoUrl("https://uaa.cloudfoundry.com/userinfo");
+        filter.afterPropertiesSet();
+        SocialClientUserDetails user = (SocialClientUserDetails) filter.getPrincipal();
+        assertTrue(!user.getAuthorities().isEmpty());
+    }
 
-	@Test
-	public void testGithubAuthentication() throws Exception {
-		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(new AuthorizationCodeResourceDetails(), context);
-		setUpContext("github.token");
-		filter.setRestTemplate(restTemplate);
-		filter.setUserInfoUrl("https://api.github.com/user");
-		filter.afterPropertiesSet();
-		SocialClientUserDetails user = (SocialClientUserDetails) filter.getPrincipal();
-		assertTrue(!user.getAuthorities().isEmpty());
-	}
+    @Test
+    public void testGithubAuthentication() throws Exception {
+        OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(new AuthorizationCodeResourceDetails(), context);
+        setUpContext("github.token");
+        filter.setRestTemplate(restTemplate);
+        filter.setUserInfoUrl("https://api.github.com/user");
+        filter.afterPropertiesSet();
+        SocialClientUserDetails user = (SocialClientUserDetails) filter.getPrincipal();
+        assertTrue(!user.getAuthorities().isEmpty());
+    }
 
-	@Test
-	public void testFacebookAuthentication() throws Exception {
-		AuthorizationCodeResourceDetails resource = new AuthorizationCodeResourceDetails();
-		resource.setAuthenticationScheme(AuthenticationScheme.query);
-		OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(resource, context);
-		setUpContext("facebook.token");
-		filter.setRestTemplate(restTemplate);
-		filter.setUserInfoUrl("https://graph.facebook.com/me");
-		filter.afterPropertiesSet();
-		SocialClientUserDetails user = (SocialClientUserDetails) filter.getPrincipal();
-		assertTrue(!user.getAuthorities().isEmpty());
-	}
+    @Test
+    public void testFacebookAuthentication() throws Exception {
+        AuthorizationCodeResourceDetails resource = new AuthorizationCodeResourceDetails();
+        resource.setAuthenticationScheme(AuthenticationScheme.query);
+        OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(resource, context);
+        setUpContext("facebook.token");
+        filter.setRestTemplate(restTemplate);
+        filter.setUserInfoUrl("https://graph.facebook.com/me");
+        filter.afterPropertiesSet();
+        SocialClientUserDetails user = (SocialClientUserDetails) filter.getPrincipal();
+        assertTrue(!user.getAuthorities().isEmpty());
+    }
 
 }

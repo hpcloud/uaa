@@ -22,23 +22,23 @@ import org.junit.Test;
  *
  */
 public class PromptEditorTests {
-	
-	private PromptEditor editor = new PromptEditor();
+    
+    private PromptEditor editor = new PromptEditor();
 
-	@Test
-	public void testDeserialization() throws Exception {
-		editor.setAsText("username:[text,Username]");
-		Prompt prompt = (Prompt) editor.getValue();
-		String[] values = prompt.getDetails();
-		assertEquals("text", values[0]);
-		assertEquals("Username", values[1]);
-	}
+    @Test
+    public void testDeserialization() throws Exception {
+        editor.setAsText("username:[text,Username]");
+        Prompt prompt = (Prompt) editor.getValue();
+        String[] values = prompt.getDetails();
+        assertEquals("text", values[0]);
+        assertEquals("Username", values[1]);
+    }
 
-	@Test
-	public void testSerialization() throws Exception {
-		Prompt prompt = new Prompt("username", "text", "Username");
-		editor.setValue(prompt);
-		assertEquals("\"username\":[\"text\",\"Username\"]", editor.getAsText());
-	}
+    @Test
+    public void testSerialization() throws Exception {
+        Prompt prompt = new Prompt("username", "text", "Username");
+        editor.setValue(prompt);
+        assertEquals("\"username\":[\"text\",\"Username\"]", editor.getAsText());
+    }
 
 }

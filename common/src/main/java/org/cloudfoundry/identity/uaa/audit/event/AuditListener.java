@@ -25,20 +25,20 @@ import org.springframework.util.Assert;
  * @author Dave Syer
  */
 public class AuditListener implements ApplicationListener<AbstractUaaEvent> {
-	private final UaaAuditService uaaAuditService;
+    private final UaaAuditService uaaAuditService;
 
-	public AuditListener() {
-		uaaAuditService = new LoggingAuditService();
-	}
+    public AuditListener() {
+        uaaAuditService = new LoggingAuditService();
+    }
 
-	public AuditListener(UaaAuditService auditor) {
-		Assert.notNull(auditor);
-		this.uaaAuditService = auditor;
-	}
+    public AuditListener(UaaAuditService auditor) {
+        Assert.notNull(auditor);
+        this.uaaAuditService = auditor;
+    }
 
-	@Override
-	public void onApplicationEvent(AbstractUaaEvent event) {
-		event.process(uaaAuditService);
-	}
+    @Override
+    public void onApplicationEvent(AbstractUaaEvent event) {
+        event.process(uaaAuditService);
+    }
 
 }

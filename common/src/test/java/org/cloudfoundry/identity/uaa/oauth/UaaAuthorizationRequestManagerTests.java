@@ -57,234 +57,234 @@ import org.springframework.util.StringUtils;
 @ProfileValueSourceConfiguration(NullSafeSystemProfileValueSource.class)
 public class UaaAuthorizationRequestManagerTests {
 
-	private UaaAuthorizationRequestManager factory;
+    private UaaAuthorizationRequestManager factory;
 
-	private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
+    private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
 
-	private Map<String, String> parameters = new HashMap<String, String>();
+    private Map<String, String> parameters = new HashMap<String, String>();
 
-	private BaseClientDetails client = new BaseClientDetails();
+    private BaseClientDetails client = new BaseClientDetails();
 
-	@Before
-	public void init() {
-		parameters.put("client_id", "foo");
-		factory = new UaaAuthorizationRequestManager(clientDetailsService);
-		factory.setSecurityContextAccessor(new StubSecurityContextAccessor());
-		factory.setExternalGroupMappingAuthorizationManager(null);
-		Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenReturn(client);
-	}
+    @Before
+    public void init() {
+        parameters.put("client_id", "foo");
+        factory = new UaaAuthorizationRequestManager(clientDetailsService);
+        factory.setSecurityContextAccessor(new StubSecurityContextAccessor());
+        factory.setExternalGroupMappingAuthorizationManager(null);
+        Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenReturn(client);
+    }
 
-	@Test
-	public void testFactoryProducesSomething() {
-		assertNotNull(factory.createAuthorizationRequest(parameters));
-	}
+    @Test
+    public void testFactoryProducesSomething() {
+        assertNotNull(factory.createAuthorizationRequest(parameters));
+    }
 
-	@Test
-	public void testScopeDefaultsToAuthoritiesForClientCredentials() {
-		client.setAuthorities(AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz"));
-		parameters.put("grant_type", "client_credentials");
-		AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-		assertEquals(StringUtils.commaDelimitedListToSet("foo.bar,spam.baz"), request.getScope());
-	}
+    @Test
+    public void testScopeDefaultsToAuthoritiesForClientCredentials() {
+        client.setAuthorities(AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz"));
+        parameters.put("grant_type", "client_credentials");
+        AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
+        assertEquals(StringUtils.commaDelimitedListToSet("foo.bar,spam.baz"), request.getScope());
+    }
 
-	@Test
-	public void testScopeIncludesAuthoritiesForUser() {
-		SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
-			@Override
-			public boolean isUser() {
-				return true;
-			}
-			@Override
-			public Collection<? extends GrantedAuthority> getAuthorities() {
-				return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
-			}
-		};
-		factory.setSecurityContextAccessor(securityContextAccessor);
-		client.setScope(StringUtils.commaDelimitedListToSet("one,two,foo.bar"));
-		AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-		assertEquals(StringUtils.commaDelimitedListToSet("foo.bar"), new TreeSet<String>(request.getScope()));
-		factory.validateParameters(request.getAuthorizationParameters(), client);
-	}
+    @Test
+    public void testScopeIncludesAuthoritiesForUser() {
+        SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
+            @Override
+            public boolean isUser() {
+                return true;
+            }
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
+            }
+        };
+        factory.setSecurityContextAccessor(securityContextAccessor);
+        client.setScope(StringUtils.commaDelimitedListToSet("one,two,foo.bar"));
+        AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
+        assertEquals(StringUtils.commaDelimitedListToSet("foo.bar"), new TreeSet<String>(request.getScope()));
+        factory.validateParameters(request.getAuthorizationParameters(), client);
+    }
 
-	@Test
-	public void testOpenidScopeIncludeIsAResourceId() {
-		SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
-			@Override
-			public boolean isUser() {
-				return true;
-			}
+    @Test
+    public void testOpenidScopeIncludeIsAResourceId() {
+        SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
+            @Override
+            public boolean isUser() {
+                return true;
+            }
 
-			@Override
-			public Collection<? extends GrantedAuthority> getAuthorities() {
-				return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
-			}
-		};
-		parameters.put("scope", "openid foo.bar");
-		factory.setDefaultScopes(Arrays.asList("openid"));
-		factory.setSecurityContextAccessor(securityContextAccessor);
-		client.setScope(StringUtils.commaDelimitedListToSet("openid,foo.bar"));
-		AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-		assertEquals(StringUtils.commaDelimitedListToSet("openid,foo.bar"), new TreeSet<String>(request.getScope()));
-		assertEquals(StringUtils.commaDelimitedListToSet("openid,foo"), new TreeSet<String>(request.getResourceIds()));
-	}
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
+            }
+        };
+        parameters.put("scope", "openid foo.bar");
+        factory.setDefaultScopes(Arrays.asList("openid"));
+        factory.setSecurityContextAccessor(securityContextAccessor);
+        client.setScope(StringUtils.commaDelimitedListToSet("openid,foo.bar"));
+        AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
+        assertEquals(StringUtils.commaDelimitedListToSet("openid,foo.bar"), new TreeSet<String>(request.getScope()));
+        assertEquals(StringUtils.commaDelimitedListToSet("openid,foo"), new TreeSet<String>(request.getResourceIds()));
+    }
 
-	@Test
-	public void testEmptyScopeOkForClientWithNoScopes() {
-		SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
-			@Override
-			public boolean isUser() {
-				return true;
-			}
+    @Test
+    public void testEmptyScopeOkForClientWithNoScopes() {
+        SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
+            @Override
+            public boolean isUser() {
+                return true;
+            }
 
-			@Override
-			public Collection<? extends GrantedAuthority> getAuthorities() {
-				return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
-			}
-		};
-		factory.setSecurityContextAccessor(securityContextAccessor);
-		client.setScope(StringUtils.commaDelimitedListToSet("")); // empty
-		AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-		assertEquals(StringUtils.commaDelimitedListToSet(""), new TreeSet<String>(request.getScope()));
-	}
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
+            }
+        };
+        factory.setSecurityContextAccessor(securityContextAccessor);
+        client.setScope(StringUtils.commaDelimitedListToSet("")); // empty
+        AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
+        assertEquals(StringUtils.commaDelimitedListToSet(""), new TreeSet<String>(request.getScope()));
+    }
 
-	@Test(expected=InvalidScopeException.class)
-	public void testEmptyScopeFailsClientWithScopes() {
-		SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
-			@Override
-			public boolean isUser() {
-				return true;
-			}
+    @Test(expected=InvalidScopeException.class)
+    public void testEmptyScopeFailsClientWithScopes() {
+        SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
+            @Override
+            public boolean isUser() {
+                return true;
+            }
 
-			@Override
-			public Collection<? extends GrantedAuthority> getAuthorities() {
-				return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
-			}
-		};
-		factory.setSecurityContextAccessor(securityContextAccessor);
-		client.setScope(StringUtils.commaDelimitedListToSet("one,two")); // not empty
-		AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-		assertEquals(StringUtils.commaDelimitedListToSet(""), new TreeSet<String>(request.getScope()));
-	}
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
+            }
+        };
+        factory.setSecurityContextAccessor(securityContextAccessor);
+        client.setScope(StringUtils.commaDelimitedListToSet("one,two")); // not empty
+        AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
+        assertEquals(StringUtils.commaDelimitedListToSet(""), new TreeSet<String>(request.getScope()));
+    }
 
-	@Test
-	public void testResourecIdsExtracted() {
-		client.setAuthorities(AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz"));
-		parameters.put("grant_type", "client_credentials");
-		AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-		assertEquals(StringUtils.commaDelimitedListToSet("foo,spam"), request.getResourceIds());
-	}
+    @Test
+    public void testResourecIdsExtracted() {
+        client.setAuthorities(AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz"));
+        parameters.put("grant_type", "client_credentials");
+        AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
+        assertEquals(StringUtils.commaDelimitedListToSet("foo,spam"), request.getResourceIds());
+    }
 
-	@Test
-	public void testResourecIdsDoNotIncludeUaa() {
-		client.setAuthorities(AuthorityUtils.commaSeparatedStringToAuthorityList("uaa.none,spam.baz"));
-		parameters.put("grant_type", "client_credentials");
-		AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-		assertEquals(StringUtils.commaDelimitedListToSet("spam"), request.getResourceIds());
-	}
+    @Test
+    public void testResourecIdsDoNotIncludeUaa() {
+        client.setAuthorities(AuthorityUtils.commaSeparatedStringToAuthorityList("uaa.none,spam.baz"));
+        parameters.put("grant_type", "client_credentials");
+        AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
+        assertEquals(StringUtils.commaDelimitedListToSet("spam"), request.getResourceIds());
+    }
 
-	@Test
-	public void testResourceIdsWithCustomSeparator() {
-		factory.setScopeSeparator("--");
-		client.setAuthorities(AuthorityUtils.commaSeparatedStringToAuthorityList("foo--bar,spam--baz"));
-		parameters.put("grant_type", "client_credentials");
-		AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
-		assertEquals(StringUtils.commaDelimitedListToSet("foo,spam"), request.getResourceIds());
-	}
+    @Test
+    public void testResourceIdsWithCustomSeparator() {
+        factory.setScopeSeparator("--");
+        client.setAuthorities(AuthorityUtils.commaSeparatedStringToAuthorityList("foo--bar,spam--baz"));
+        parameters.put("grant_type", "client_credentials");
+        AuthorizationRequest request = factory.createAuthorizationRequest(parameters);
+        assertEquals(StringUtils.commaDelimitedListToSet("foo,spam"), request.getResourceIds());
+    }
 
-	@Test
-	public void testScopesValid() throws Exception {
-		factory.validateParameters(parameters, new BaseClientDetails("foo", null, "read,write", "implicit", null));
-	}
+    @Test
+    public void testScopesValid() throws Exception {
+        factory.validateParameters(parameters, new BaseClientDetails("foo", null, "read,write", "implicit", null));
+    }
 
-	@Test(expected = InvalidScopeException.class)
-	public void testScopesInvalid() throws Exception {
-		parameters.put("scope", "admin");
-		factory.validateParameters(parameters, new BaseClientDetails("foo", null, "read,write", "implicit", null));
-	}
+    @Test(expected = InvalidScopeException.class)
+    public void testScopesInvalid() throws Exception {
+        parameters.put("scope", "admin");
+        factory.validateParameters(parameters, new BaseClientDetails("foo", null, "read,write", "implicit", null));
+    }
 
-	@Test
-	public void testSuccessWithAnExternalAuthorizationRequestWithASingleExternallyMappedScope() {
-		parameters.put("client_id", "foo");
-		parameters.put("scope", "read");
-		parameters.put("authorities", "{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}");
-		SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
-			@Override
-			public boolean isUser() {
-				return true;
-			}
+    @Test
+    public void testSuccessWithAnExternalAuthorizationRequestWithASingleExternallyMappedScope() {
+        parameters.put("client_id", "foo");
+        parameters.put("scope", "read");
+        parameters.put("authorities", "{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}");
+        SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
+            @Override
+            public boolean isUser() {
+                return true;
+            }
 
-			@Override
-			public Collection<? extends GrantedAuthority> getAuthorities() {
-				return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
-			}
-		};
-		factory.setSecurityContextAccessor(securityContextAccessor);
-		TestExternalAuthorizationManager externalAuthManager = new TestExternalAuthorizationManager();
-		Set<String> acmeScopes = new HashSet<String>();
-		acmeScopes.add("acme");
-		externalAuthManager.defineScopesForAuthorities("{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}", acmeScopes);
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
+            }
+        };
+        factory.setSecurityContextAccessor(securityContextAccessor);
+        TestExternalAuthorizationManager externalAuthManager = new TestExternalAuthorizationManager();
+        Set<String> acmeScopes = new HashSet<String>();
+        acmeScopes.add("acme");
+        externalAuthManager.defineScopesForAuthorities("{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}", acmeScopes);
 
-		factory.setExternalGroupMappingAuthorizationManager(externalAuthManager);
-		AuthorizationRequest authorizationRequest = factory.createAuthorizationRequest(parameters);
-		assertEquals("acme", ((DefaultAuthorizationRequest)authorizationRequest).getAuthorizationParameters().get("external_scopes"));
-	}
+        factory.setExternalGroupMappingAuthorizationManager(externalAuthManager);
+        AuthorizationRequest authorizationRequest = factory.createAuthorizationRequest(parameters);
+        assertEquals("acme", ((DefaultAuthorizationRequest)authorizationRequest).getAuthorizationParameters().get("external_scopes"));
+    }
 
-	@Test
-	public void testSuccessWithAnExternalAuthorizationRequestWithMultipleExternallyMappedScopes() {
-		parameters.put("client_id", "foo");
-		parameters.put("scope", "read");
-		parameters.put("authorities", "{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}");
-		SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
-			@Override
-			public boolean isUser() {
-				return true;
-			}
+    @Test
+    public void testSuccessWithAnExternalAuthorizationRequestWithMultipleExternallyMappedScopes() {
+        parameters.put("client_id", "foo");
+        parameters.put("scope", "read");
+        parameters.put("authorities", "{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}");
+        SecurityContextAccessor securityContextAccessor = new StubSecurityContextAccessor() {
+            @Override
+            public boolean isUser() {
+                return true;
+            }
 
-			@Override
-			public Collection<? extends GrantedAuthority> getAuthorities() {
-				return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
-			}
-		};
-		factory.setSecurityContextAccessor(securityContextAccessor);
-		TestExternalAuthorizationManager externalAuthManager = new TestExternalAuthorizationManager();
-		Set<String> acmeScopes = new HashSet<String>();
-		acmeScopes.add("acme");
-		acmeScopes.add("acme1");
-		externalAuthManager.defineScopesForAuthorities("{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}", acmeScopes);
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return AuthorityUtils.commaSeparatedStringToAuthorityList("foo.bar,spam.baz");
+            }
+        };
+        factory.setSecurityContextAccessor(securityContextAccessor);
+        TestExternalAuthorizationManager externalAuthManager = new TestExternalAuthorizationManager();
+        Set<String> acmeScopes = new HashSet<String>();
+        acmeScopes.add("acme");
+        acmeScopes.add("acme1");
+        externalAuthManager.defineScopesForAuthorities("{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}", acmeScopes);
 
-		factory.setExternalGroupMappingAuthorizationManager(externalAuthManager);
-		AuthorizationRequest authorizationRequest = factory.createAuthorizationRequest(parameters);
-		assertEquals("acme1 acme", ((DefaultAuthorizationRequest)authorizationRequest).getAuthorizationParameters().get("external_scopes"));
-	}
+        factory.setExternalGroupMappingAuthorizationManager(externalAuthManager);
+        AuthorizationRequest authorizationRequest = factory.createAuthorizationRequest(parameters);
+        assertEquals("acme1 acme", ((DefaultAuthorizationRequest)authorizationRequest).getAuthorizationParameters().get("external_scopes"));
+    }
 
-	@Test
-	public void testSuccessWithAnExternalAuthorizationRequestWithNoExternallyMappedScopes() {
-		parameters.put("client_id", "foo");
-		parameters.put("scope", "read");
+    @Test
+    public void testSuccessWithAnExternalAuthorizationRequestWithNoExternallyMappedScopes() {
+        parameters.put("client_id", "foo");
+        parameters.put("scope", "read");
 
-		TestExternalAuthorizationManager externalAuthManager = new TestExternalAuthorizationManager();
-		Set<String> acmeScopes = new HashSet<String>();
-		acmeScopes.add("acme");
-		externalAuthManager.defineScopesForAuthorities("{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}", acmeScopes);
+        TestExternalAuthorizationManager externalAuthManager = new TestExternalAuthorizationManager();
+        Set<String> acmeScopes = new HashSet<String>();
+        acmeScopes.add("acme");
+        externalAuthManager.defineScopesForAuthorities("{\"externalGroups.0\": \"cn=test_org,ou=people,o=springsource,o=org\"}", acmeScopes);
 
-		factory.setExternalGroupMappingAuthorizationManager(externalAuthManager);
-		AuthorizationRequest authorizationRequest = factory.createAuthorizationRequest(parameters);
-		assertNull(((DefaultAuthorizationRequest)authorizationRequest).getAuthorizationParameters().get("external_scopes"));
-	}
+        factory.setExternalGroupMappingAuthorizationManager(externalAuthManager);
+        AuthorizationRequest authorizationRequest = factory.createAuthorizationRequest(parameters);
+        assertNull(((DefaultAuthorizationRequest)authorizationRequest).getAuthorizationParameters().get("external_scopes"));
+    }
 
-	private class TestExternalAuthorizationManager implements ExternalGroupMappingAuthorizationManager {
+    private class TestExternalAuthorizationManager implements ExternalGroupMappingAuthorizationManager {
 
-		private Map<String, Set<String>> desiredScopes = new HashMap<String, Set<String>>();
+        private Map<String, Set<String>> desiredScopes = new HashMap<String, Set<String>>();
 
-		public void defineScopesForAuthorities(String authorities, Set<String>scopes) {
-			desiredScopes.put(authorities, scopes);
-		}
+        public void defineScopesForAuthorities(String authorities, Set<String>scopes) {
+            desiredScopes.put(authorities, scopes);
+        }
 
-		@Override
-		public Set<String> findScopesFromAuthorities(String authorities) {
-			return desiredScopes.get(authorities);
-		}
+        @Override
+        public Set<String> findScopesFromAuthorities(String authorities) {
+            return desiredScopes.get(authorities);
+        }
 
-	}
+    }
 
 }

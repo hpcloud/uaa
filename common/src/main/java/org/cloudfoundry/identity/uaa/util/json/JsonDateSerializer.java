@@ -29,13 +29,13 @@ import java.util.Date;
  */
 public class JsonDateSerializer extends JsonSerializer<Date> {
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-	@Override
-	public void serialize(Date date, JsonGenerator generator, SerializerProvider provider) throws IOException,
-			JsonProcessingException {
-		String formatted = dateFormat.format(date);
-		generator.writeString(formatted);
-	}
+    @Override
+    public void serialize(Date date, JsonGenerator generator, SerializerProvider provider) throws IOException,
+            JsonProcessingException {
+        String formatted = dateFormat.format(date);
+        generator.writeString(formatted);
+    }
 
 }

@@ -27,20 +27,20 @@ import org.springframework.security.oauth2.provider.JdbcClientDetailsService;
  */
 public class JitClientDetailsService extends JdbcQueryableClientDetailsService {
 
-	public JitClientDetailsService(JdbcClientDetailsService delegate, JdbcTemplate jdbcTemplate, JdbcPagingListFactory pagingListFactory) {
-		super(delegate, jdbcTemplate, pagingListFactory);
-	}
+    public JitClientDetailsService(JdbcClientDetailsService delegate, JdbcTemplate jdbcTemplate, JdbcPagingListFactory pagingListFactory) {
+        super(delegate, jdbcTemplate, pagingListFactory);
+    }
 
-	@Override
-	public ClientDetails retrieve(String clientId) throws OAuth2Exception {
-		ClientDetails result;
-		try {
-			result = super.retrieve(clientId);
-		} catch (OAuth2Exception e) {
-			BaseClientDetails details = new BaseClientDetails(clientId, "openid", "openid", "authorization_code", UaaAuthority.UAA_NONE.toString());
-			result = details;
-		}
-		return result;
-	}
+    @Override
+    public ClientDetails retrieve(String clientId) throws OAuth2Exception {
+        ClientDetails result;
+        try {
+            result = super.retrieve(clientId);
+        } catch (OAuth2Exception e) {
+            BaseClientDetails details = new BaseClientDetails(clientId, "openid", "openid", "authorization_code", UaaAuthority.UAA_NONE.toString());
+            result = details;
+        }
+        return result;
+    }
 
 }

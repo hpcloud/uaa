@@ -53,162 +53,162 @@ import org.springframework.util.Assert;
  */
 @ManagedResource
 public class SecurityFilterChainPostProcessor implements BeanPostProcessor {
-	private final Log logger = LogFactory.getLog(getClass());
-	private boolean requireHttps = false;
-	private List<String> redirectToHttps = Collections.emptyList();
-	private List<String> ignore = Collections.emptyList();
-	private boolean dumpRequests = false;
+    private final Log logger = LogFactory.getLog(getClass());
+    private boolean requireHttps = false;
+    private List<String> redirectToHttps = Collections.emptyList();
+    private List<String> ignore = Collections.emptyList();
+    private boolean dumpRequests = false;
 
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-		if (bean instanceof SecurityFilterChain && !ignore.contains(beanName)) {
-			logger.info("Processing security filter chain " + beanName);
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof SecurityFilterChain && !ignore.contains(beanName)) {
+            logger.info("Processing security filter chain " + beanName);
 
-			SecurityFilterChain fc = (SecurityFilterChain)bean;
+            SecurityFilterChain fc = (SecurityFilterChain)bean;
 
-			Filter uaaFilter;
+            Filter uaaFilter;
 
-			if (requireHttps) {
-				uaaFilter = new HttpsEnforcementFilter(beanName, redirectToHttps.contains(beanName));
-			} else {
-				uaaFilter = new UaaLoggingFilter(beanName);
-			}
-			fc.getFilters().add(0, uaaFilter);
-		}
+            if (requireHttps) {
+                uaaFilter = new HttpsEnforcementFilter(beanName, redirectToHttps.contains(beanName));
+            } else {
+                uaaFilter = new UaaLoggingFilter(beanName);
+            }
+            fc.getFilters().add(0, uaaFilter);
+        }
 
-		return bean;
-	}
+        return bean;
+    }
 
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-		return bean;
-	}
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
 
-	/**
-	 * If set to true, HTTPS will be required for all requests.
-	 */
-	public void setRequireHttps(boolean requireHttps) {
-		this.requireHttps = requireHttps;
-	}
+    /**
+     * If set to true, HTTPS will be required for all requests.
+     */
+    public void setRequireHttps(boolean requireHttps) {
+        this.requireHttps = requireHttps;
+    }
 
-	/**
-	 * Debugging feature. If enabled, and debug logging is enabled
-	 */
-	@ManagedAttribute(description = "Enable dumping of incoming requests to the debug log")
-	public void setDumpRequests(boolean dumpRequests) {
-		this.dumpRequests = dumpRequests;
-	}
+    /**
+     * Debugging feature. If enabled, and debug logging is enabled
+     */
+    @ManagedAttribute(description = "Enable dumping of incoming requests to the debug log")
+    public void setDumpRequests(boolean dumpRequests) {
+        this.dumpRequests = dumpRequests;
+    }
 
-	public void setRedirectToHttps(List<String> redirectToHttps) {
-		Assert.notNull(redirectToHttps);
-		this.redirectToHttps = redirectToHttps;
-	}
+    public void setRedirectToHttps(List<String> redirectToHttps) {
+        Assert.notNull(redirectToHttps);
+        this.redirectToHttps = redirectToHttps;
+    }
 
-	/**
-	 * List of filter chains which should be ignored completely.
-	 */
-	public void setIgnore(List<String> ignore) {
-		Assert.notNull(ignore);
-		this.ignore = ignore;
-	}
+    /**
+     * List of filter chains which should be ignored completely.
+     */
+    public void setIgnore(List<String> ignore) {
+        Assert.notNull(ignore);
+        this.ignore = ignore;
+    }
 
-	final class HttpsEnforcementFilter extends UaaLoggingFilter {
-		private final int httpsPort = 443;
-		private final boolean redirect;
+    final class HttpsEnforcementFilter extends UaaLoggingFilter {
+        private final int httpsPort = 443;
+        private final boolean redirect;
 
-		HttpsEnforcementFilter(String name, boolean redirect) {
-			super(name);
-			this.redirect = redirect;
-		}
+        HttpsEnforcementFilter(String name, boolean redirect) {
+            super(name);
+            this.redirect = redirect;
+        }
 
-		public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-			HttpServletRequest request = (HttpServletRequest) req;
-			HttpServletResponse response = (HttpServletResponse) res;
+        public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+            HttpServletRequest request = (HttpServletRequest) req;
+            HttpServletResponse response = (HttpServletResponse) res;
 
-			if (request.isSecure()) {
-				// Ok. Just pass on.
-				if (redirect) {
-					// Set HSTS header for browser clients
-					response.setHeader("Strict-Transport-Security", "max-age=31536000");
-				}
-				super.doFilter(req, response, chain);
-				return;
-			}
+            if (request.isSecure()) {
+                // Ok. Just pass on.
+                if (redirect) {
+                    // Set HSTS header for browser clients
+                    response.setHeader("Strict-Transport-Security", "max-age=31536000");
+                }
+                super.doFilter(req, response, chain);
+                return;
+            }
 
-			logger.debug("Bad (non-https) request received from: " + request.getRemoteHost());
+            logger.debug("Bad (non-https) request received from: " + request.getRemoteHost());
 
-			if (dumpRequests) {
-				logger.debug(dumpRequest(request));
-			}
+            if (dumpRequests) {
+                logger.debug(dumpRequest(request));
+            }
 
-			if (redirect) {
-				RedirectUrlBuilder rb = new RedirectUrlBuilder();
-				rb.setScheme("https");
-				rb.setPort(httpsPort);
-				rb.setContextPath(request.getContextPath());
-				rb.setServletPath(request.getServletPath());
-				rb.setPathInfo(request.getPathInfo());
-				rb.setQuery(request.getQueryString());
-				rb.setServerName(request.getServerName());
-				// Send a 301 as suggested by
-				// http://tools.ietf.org/html/draft-ietf-websec-strict-transport-sec-14#section-7.2
-				String url = rb.getUrl();
-				if (logger.isDebugEnabled()) {
-					logger.debug("Redirecting to " + url);
-				}
-				response.setHeader("Location", url);
-				response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-			} else {
-				response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "{\"error\": \"request must be over https\"}");
-			}
-		}
-	}
+            if (redirect) {
+                RedirectUrlBuilder rb = new RedirectUrlBuilder();
+                rb.setScheme("https");
+                rb.setPort(httpsPort);
+                rb.setContextPath(request.getContextPath());
+                rb.setServletPath(request.getServletPath());
+                rb.setPathInfo(request.getPathInfo());
+                rb.setQuery(request.getQueryString());
+                rb.setServerName(request.getServerName());
+                // Send a 301 as suggested by
+                // http://tools.ietf.org/html/draft-ietf-websec-strict-transport-sec-14#section-7.2
+                String url = rb.getUrl();
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Redirecting to " + url);
+                }
+                response.setHeader("Location", url);
+                response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+            } else {
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "{\"error\": \"request must be over https\"}");
+            }
+        }
+    }
 
-	class UaaLoggingFilter implements Filter {
-		final Log logger = LogFactory.getLog(getClass());
-		protected final String name;
+    class UaaLoggingFilter implements Filter {
+        final Log logger = LogFactory.getLog(getClass());
+        protected final String name;
 
-		UaaLoggingFilter(String name) {
-			this.name = name;
-		}
+        UaaLoggingFilter(String name) {
+            this.name = name;
+        }
 
-		public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-			HttpServletRequest request = (HttpServletRequest)req;
-			HttpServletResponse response = (HttpServletResponse) res;
+        public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+            HttpServletRequest request = (HttpServletRequest)req;
+            HttpServletResponse response = (HttpServletResponse) res;
 
-			if (logger.isDebugEnabled()) {
-				logger.debug("Filter chain '" + name + "' processing request " + request.getMethod() + " " + request.getRequestURI());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Filter chain '" + name + "' processing request " + request.getMethod() + " " + request.getRequestURI());
 
-				if (dumpRequests) {
-					logger.debug(dumpRequest(request));
-				}
-			}
+                if (dumpRequests) {
+                    logger.debug(dumpRequest(request));
+                }
+            }
 
-			chain.doFilter(request, response);
-		}
+            chain.doFilter(request, response);
+        }
 
-		@SuppressWarnings("unchecked")
-		protected final String dumpRequest(HttpServletRequest r) {
-			StringBuilder builder = new StringBuilder(256);
-			builder.append("\n    ").append(r.getMethod()).append(" ").append(r.getRequestURI()).append("\n");
-			Enumeration<String> e = r.getHeaderNames();
+        @SuppressWarnings("unchecked")
+        protected final String dumpRequest(HttpServletRequest r) {
+            StringBuilder builder = new StringBuilder(256);
+            builder.append("\n    ").append(r.getMethod()).append(" ").append(r.getRequestURI()).append("\n");
+            Enumeration<String> e = r.getHeaderNames();
 
-			while(e.hasMoreElements()) {
-				String hdrName = e.nextElement();
-				Enumeration<String> values = r.getHeaders(hdrName);
+            while(e.hasMoreElements()) {
+                String hdrName = e.nextElement();
+                Enumeration<String> values = r.getHeaders(hdrName);
 
-				while (values.hasMoreElements()) {
-					builder.append("    ").append(hdrName).append(": ").append(values.nextElement()).append("\n");
-				}
-			}
-			return builder.toString();
-		}
+                while (values.hasMoreElements()) {
+                    builder.append("    ").append(hdrName).append(": ").append(values.nextElement()).append("\n");
+                }
+            }
+            return builder.toString();
+        }
 
-		public void init(FilterConfig filterConfig) throws ServletException {
-		}
+        public void init(FilterConfig filterConfig) throws ServletException {
+        }
 
-		public void destroy() {
-		}
-	}
+        public void destroy() {
+        }
+    }
 }
 
 

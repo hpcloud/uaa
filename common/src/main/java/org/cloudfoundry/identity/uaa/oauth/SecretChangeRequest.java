@@ -21,23 +21,23 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 @JsonSerialize (include = JsonSerialize.Inclusion.NON_NULL)
 public class SecretChangeRequest {
 
-	private String oldSecret;
-	private String secret;
+    private String oldSecret;
+    private String secret;
 
-	public String getSecret() {
-		return secret;
-	}
+    public String getSecret() {
+        return secret;
+    }
 
-	public void setSecret(String secret) {
-		this.secret = secret;
-	}
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
 
-	public String getOldSecret() {
-		return oldSecret;
-	}
+    public String getOldSecret() {
+        return oldSecret;
+    }
 
-	public void setOldSecret(String old) {
-		this.oldSecret = old;
-	}
+    public void setOldSecret(String old) {
+        this.oldSecret = old;
+    }
 
 }

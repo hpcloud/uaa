@@ -23,17 +23,17 @@ import org.cloudfoundry.identity.uaa.authentication.UaaAuthenticationDetails;
  */
 public class PrincipalAuthenticationFailureEvent extends AbstractUaaPrincipalEvent {
 
-	private String name;
+    private String name;
 
-	public PrincipalAuthenticationFailureEvent(String name, UaaAuthenticationDetails details) {
-		super(details);
-		this.name = name;
-	}
+    public PrincipalAuthenticationFailureEvent(String name, UaaAuthenticationDetails details) {
+        super(details);
+        this.name = name;
+    }
 
-	@Override
-	public AuditEvent getAuditEvent() {
-		return createAuditRecord(name, AuditEventType.PrincipalAuthenticationFailure,
-				getOrigin(getAuthenticationDetails()));
-	}
+    @Override
+    public AuditEvent getAuditEvent() {
+        return createAuditRecord(name, AuditEventType.PrincipalAuthenticationFailure,
+                getOrigin(getAuthenticationDetails()));
+    }
 
 }

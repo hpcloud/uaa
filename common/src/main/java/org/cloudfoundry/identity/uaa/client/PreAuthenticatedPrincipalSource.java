@@ -18,7 +18,7 @@ package org.cloudfoundry.identity.uaa.client;
  *
  */
 public interface PreAuthenticatedPrincipalSource<T> {
-	
-	T getPrincipal();
+    
+    T getPrincipal();
 
 }

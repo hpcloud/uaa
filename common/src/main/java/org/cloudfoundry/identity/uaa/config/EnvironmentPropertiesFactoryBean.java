@@ -28,50 +28,50 @@ import org.springframework.core.env.Environment;
  */
 public class EnvironmentPropertiesFactoryBean implements FactoryBean<Properties>, EnvironmentAware {
 
-	private Environment environment;
+    private Environment environment;
 
-	private Map<String, Object> defaultProperties = new HashMap<String, Object>();
+    private Map<String, Object> defaultProperties = new HashMap<String, Object>();
 
-	public void setDefaultProperties(Properties defaultProperties) {
-		this.defaultProperties.clear();
-		for (Object key : defaultProperties.keySet()) {			
-			this.defaultProperties.put((String)key, defaultProperties.get(key));
-		}
-	}
+    public void setDefaultProperties(Properties defaultProperties) {
+        this.defaultProperties.clear();
+        for (Object key : defaultProperties.keySet()) {            
+            this.defaultProperties.put((String)key, defaultProperties.get(key));
+        }
+    }
 
-	@Override
-	public void setEnvironment(Environment environment) {
-		this.environment = environment;
-	}
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
 
-	@Override
-	public Properties getObject() {
+    @Override
+    public Properties getObject() {
 
-		Properties result = new Properties();
-		EnvironmentMapFactoryBean factory = new EnvironmentMapFactoryBean();
-		factory.setEnvironment(environment);
-		factory.setDefaultProperties(defaultProperties);
-		Map<String, ?> map = factory.getObject();
-		for (Object key : map.keySet()) {
-			Object value = map.get(key);
-			if (value==null) {
-				value = "";
-			}
-			result.put(key, value);
-		}
+        Properties result = new Properties();
+        EnvironmentMapFactoryBean factory = new EnvironmentMapFactoryBean();
+        factory.setEnvironment(environment);
+        factory.setDefaultProperties(defaultProperties);
+        Map<String, ?> map = factory.getObject();
+        for (Object key : map.keySet()) {
+            Object value = map.get(key);
+            if (value==null) {
+                value = "";
+            }
+            result.put(key, value);
+        }
 
-		return result;
+        return result;
 
-	}
+    }
 
-	@Override
-	public Class<?> getObjectType() {
-		return Properties.class;
-	}
+    @Override
+    public Class<?> getObjectType() {
+        return Properties.class;
+    }
 
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
 
 }

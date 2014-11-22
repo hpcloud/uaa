@@ -29,14 +29,14 @@ import org.junit.Test;
  */
 public class UaaUserTokenConverterTests {
 
-	private UaaUserTokenConverter converter = new UaaUserTokenConverter();
+    private UaaUserTokenConverter converter = new UaaUserTokenConverter();
 
-	@Test
-	public void test() {
-		Map<String, ?> map = converter.convertUserAuthentication(UaaAuthenticationTestFactory.getAuthentication("FOO", "foo", "foo@test.org"));
-		assertEquals("FOO", map.get(USER_ID));
-		assertEquals("foo@test.org", map.get(EMAIL));
-		assertEquals("foo", map.get(USER_NAME));
-	}
+    @Test
+    public void test() {
+        Map<String, ?> map = converter.convertUserAuthentication(UaaAuthenticationTestFactory.getAuthentication("FOO", "foo", "foo@test.org"));
+        assertEquals("FOO", map.get(USER_ID));
+        assertEquals("foo@test.org", map.get(EMAIL));
+        assertEquals("foo", map.get(USER_NAME));
+    }
 
 }

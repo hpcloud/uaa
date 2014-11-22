@@ -28,24 +28,24 @@ import org.springframework.security.crypto.codec.Utf8;
  */
 public class UserNotFoundEvent extends AbstractUaaAuthenticationEvent {
 
-	public UserNotFoundEvent(Authentication authentication) {
-		super(authentication);
-	}
+    public UserNotFoundEvent(Authentication authentication) {
+        super(authentication);
+    }
 
-	@Override
-	public AuditEvent getAuditEvent() {
+    @Override
+    public AuditEvent getAuditEvent() {
 
-		String name = getAuthentication().getName();
-		
-		try {
-			// Store hash of name, to conceal accidental entry of sensitive info (e.g. password)
-			name = Utf8.decode(Base64.encode(MessageDigest.getInstance("SHA-1").digest(Utf8.encode(name))));
-		}
-		catch (NoSuchAlgorithmException shouldNeverHappen) {
-			name = "NOSHA";
-		}
-		
-		return createAuditRecord(name, AuditEventType.UserNotFound, getOrigin(getAuthenticationDetails()), "");
-		
-	}
+        String name = getAuthentication().getName();
+        
+        try {
+            // Store hash of name, to conceal accidental entry of sensitive info (e.g. password)
+            name = Utf8.decode(Base64.encode(MessageDigest.getInstance("SHA-1").digest(Utf8.encode(name))));
+        }
+        catch (NoSuchAlgorithmException shouldNeverHappen) {
+            name = "NOSHA";
+        }
+        
+        return createAuditRecord(name, AuditEventType.UserNotFound, getOrigin(getAuthenticationDetails()), "");
+        
+    }
 }

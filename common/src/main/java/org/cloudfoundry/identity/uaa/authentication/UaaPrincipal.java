@@ -23,50 +23,50 @@ import org.cloudfoundry.identity.uaa.user.UaaUser;
  * Contains the data required for an authenticated user within the UAA application itself.
  */
 public class UaaPrincipal implements Principal, Serializable {
-	private final String id;
-	private final String name;
-	private final String email;
+    private final String id;
+    private final String name;
+    private final String email;
 
-	public UaaPrincipal(UaaUser user) {
-		this.id = user.getId();
-		this.name = user.getUsername();
-		this.email = user.getEmail();
-	}
+    public UaaPrincipal(UaaUser user) {
+        this.id = user.getId();
+        this.name = user.getUsername();
+        this.email = user.getEmail();
+    }
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	@Override
-	public String getName() {
-		return name;
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	/**
-	 * Returns {@code true} if the supplied object is a {@code UAAPrincipal} instance with the
-	 * same {@code id} value.
-	 * <p>
-	 * In other words, the objects are equal if they have the same user id, representing the
-	 * same principal.
-	 */
-	@Override
-	public boolean equals(Object rhs) {
-		if (rhs instanceof UaaPrincipal) {
-			return id.equals(((UaaPrincipal) rhs).id);
-		}
-		return false;
-	}
+    /**
+     * Returns {@code true} if the supplied object is a {@code UAAPrincipal} instance with the
+     * same {@code id} value.
+     * <p>
+     * In other words, the objects are equal if they have the same user id, representing the
+     * same principal.
+     */
+    @Override
+    public boolean equals(Object rhs) {
+        if (rhs instanceof UaaPrincipal) {
+            return id.equals(((UaaPrincipal) rhs).id);
+        }
+        return false;
+    }
 
-	/**
-	 * Returns the hashcode of the {@code id}.
-	 */
-	@Override
-	public int hashCode() {
-		return id.hashCode();
-	}
+    /**
+     * Returns the hashcode of the {@code id}.
+     */
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 
 }

@@ -25,30 +25,30 @@ import org.springframework.security.core.authority.AuthorityUtils;
  */
 public class TokenKeyEndpointTests {
 
-	private TokenKeyEndpoint tokenEnhancer = new TokenKeyEndpoint();
-	private SignerProvider signerProvider = new SignerProvider();
+    private TokenKeyEndpoint tokenEnhancer = new TokenKeyEndpoint();
+    private SignerProvider signerProvider = new SignerProvider();
 
-	@Before
-	public void setUp() throws Exception {
-		tokenEnhancer.setSignerProvider(signerProvider);
-	}
+    @Before
+    public void setUp() throws Exception {
+        tokenEnhancer.setSignerProvider(signerProvider);
+    }
 
 
-	@Test
-	public void sharedSecretIsReturnedFromTokenKeyEndpoint() throws Exception {
-		signerProvider.setVerifierKey("someKey");
-		assertEquals("{alg=HMACSHA256, value=someKey}",
-				tokenEnhancer.getKey(new UsernamePasswordAuthenticationToken("foo", "bar")).toString());
-	}
+    @Test
+    public void sharedSecretIsReturnedFromTokenKeyEndpoint() throws Exception {
+        signerProvider.setVerifierKey("someKey");
+        assertEquals("{alg=HMACSHA256, value=someKey}",
+                tokenEnhancer.getKey(new UsernamePasswordAuthenticationToken("foo", "bar")).toString());
+    }
 
-	@Test(expected = AccessDeniedException.class)
-	public void sharedSecretCannotBeAnonymouslyRetrievedFromTokenKeyEndpoint() throws Exception {
-		signerProvider.setVerifierKey("someKey");
-		assertEquals(
-				"{alg=HMACSHA256, value=someKey}",
-				tokenEnhancer.getKey(
-						new AnonymousAuthenticationToken("anon", "anonymousUser", AuthorityUtils
-								.createAuthorityList("ROLE_ANONYMOUS"))).toString());
-	}
+    @Test(expected = AccessDeniedException.class)
+    public void sharedSecretCannotBeAnonymouslyRetrievedFromTokenKeyEndpoint() throws Exception {
+        signerProvider.setVerifierKey("someKey");
+        assertEquals(
+                "{alg=HMACSHA256, value=someKey}",
+                tokenEnhancer.getKey(
+                        new AnonymousAuthenticationToken("anon", "anonymousUser", AuthorityUtils
+                                .createAuthorityList("ROLE_ANONYMOUS"))).toString());
+    }
 
 }

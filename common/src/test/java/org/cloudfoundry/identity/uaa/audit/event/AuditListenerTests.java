@@ -35,35 +35,35 @@ import org.springframework.security.core.Authentication;
  */
 public class AuditListenerTests {
 
-	private AuditListener listener;
-	private UaaAuditService auditor;
-	private UaaUser user = new UaaUser("auser", "password", "auser@blah.com", "A", "User");
-	private UaaAuthenticationDetails details = new UaaAuthenticationDetails(mock(HttpServletRequest.class));
+    private AuditListener listener;
+    private UaaAuditService auditor;
+    private UaaUser user = new UaaUser("auser", "password", "auser@blah.com", "A", "User");
+    private UaaAuthenticationDetails details = new UaaAuthenticationDetails(mock(HttpServletRequest.class));
 
-	@Before
-	public void setUp() throws Exception {
-		auditor = mock(UaaAuditService.class);
-		listener = new AuditListener(auditor);
-	}
+    @Before
+    public void setUp() throws Exception {
+        auditor = mock(UaaAuditService.class);
+        listener = new AuditListener(auditor);
+    }
 
-	@Test
-	public void userNotFoundIsAudited() throws Exception {
-		AuthzAuthenticationRequest req = new AuthzAuthenticationRequest("breakin", "password", details);
-		listener.onApplicationEvent(new UserNotFoundEvent(req));
-		verify(auditor).log(isA(AuditEvent.class));
-	}
+    @Test
+    public void userNotFoundIsAudited() throws Exception {
+        AuthzAuthenticationRequest req = new AuthzAuthenticationRequest("breakin", "password", details);
+        listener.onApplicationEvent(new UserNotFoundEvent(req));
+        verify(auditor).log(isA(AuditEvent.class));
+    }
 
-	@Test
-	public void successfulUserAuthenticationIsAudited() throws Exception {
-		listener.onApplicationEvent(new UserAuthenticationSuccessEvent(user, mock(Authentication.class)));
-		verify(auditor).log(isA(AuditEvent.class));
-	}
+    @Test
+    public void successfulUserAuthenticationIsAudited() throws Exception {
+        listener.onApplicationEvent(new UserAuthenticationSuccessEvent(user, mock(Authentication.class)));
+        verify(auditor).log(isA(AuditEvent.class));
+    }
 
-	@Test
-	public void failedUserAuthenticationIsAudited() throws Exception {
-		AuthzAuthenticationRequest req = new AuthzAuthenticationRequest("auser", "password", details);
-		listener.onApplicationEvent(new UserAuthenticationFailureEvent(user, req));
-		verify(auditor).log(isA(AuditEvent.class));
-	}
+    @Test
+    public void failedUserAuthenticationIsAudited() throws Exception {
+        AuthzAuthenticationRequest req = new AuthzAuthenticationRequest("auser", "password", details);
+        listener.onApplicationEvent(new UserAuthenticationFailureEvent(user, req));
+        verify(auditor).log(isA(AuditEvent.class));
+    }
 
 }

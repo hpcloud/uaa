@@ -48,88 +48,88 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ProfileValueSourceConfiguration(NullSafeSystemProfileValueSource.class)
 public class JdbcUaaUserDatabaseTests {
 
-	@Autowired
-	private DataSource dataSource;
+    @Autowired
+    private DataSource dataSource;
 
-	private JdbcUaaUserDatabase db;
-	
-	private static final String JOE_ID = "550e8400-e29b-41d4-a716-446655440000";
+    private JdbcUaaUserDatabase db;
+    
+    private static final String JOE_ID = "550e8400-e29b-41d4-a716-446655440000";
 
-	private static final String addUserSql = "insert into users (id, username, password, email, givenName, familyName, phoneNumber) values (?,?,?,?,?,?,?)";
+    private static final String addUserSql = "insert into users (id, username, password, email, givenName, familyName, phoneNumber) values (?,?,?,?,?,?,?)";
 
-	private static final String getAuthoritiesSql = "select authorities from users where id=?";
+    private static final String getAuthoritiesSql = "select authorities from users where id=?";
 
-	private static final String addAuthoritySql = "update users set authorities=? where id=?";
+    private static final String addAuthoritySql = "update users set authorities=? where id=?";
 
-	private static final String MABEL_ID = UUID.randomUUID().toString();
+    private static final String MABEL_ID = UUID.randomUUID().toString();
 
-	private JdbcTemplate template;
+    private JdbcTemplate template;
 
-	private void addUser(String id, String name, String password) {
-		TestUtils.assertNoSuchUser(template, "id", id);
-		template.update(addUserSql, id, name, password, name.toLowerCase() + "@test.org", name, name, "");
-	}
+    private void addUser(String id, String name, String password) {
+        TestUtils.assertNoSuchUser(template, "id", id);
+        template.update(addUserSql, id, name, password, name.toLowerCase() + "@test.org", name, name, "");
+    }
 
-	private void addAuthority(String authority, String userId) {
-		String authorities = template.queryForObject(getAuthoritiesSql, String.class, userId);
-		authorities = authorities==null ? authority : authorities + "," + authority;
-		template.update(addAuthoritySql, authorities, userId);
-	}
+    private void addAuthority(String authority, String userId) {
+        String authorities = template.queryForObject(getAuthoritiesSql, String.class, userId);
+        authorities = authorities==null ? authority : authorities + "," + authority;
+        template.update(addAuthoritySql, authorities, userId);
+    }
 
-	@Before
-	public void initializeDb() throws Exception {
+    @Before
+    public void initializeDb() throws Exception {
 
-		template = new JdbcTemplate(dataSource);
+        template = new JdbcTemplate(dataSource);
 
-		db = new JdbcUaaUserDatabase(template);
-		db.setDefaultAuthorities(Collections.singleton("uaa.user"));
+        db = new JdbcUaaUserDatabase(template);
+        db.setDefaultAuthorities(Collections.singleton("uaa.user"));
 
-		TestUtils.assertNoSuchUser(template, "id", JOE_ID);
-		TestUtils.assertNoSuchUser(template, "id", MABEL_ID);
-		TestUtils.assertNoSuchUser(template, "userName", "jo@foo.com");
+        TestUtils.assertNoSuchUser(template, "id", JOE_ID);
+        TestUtils.assertNoSuchUser(template, "id", MABEL_ID);
+        TestUtils.assertNoSuchUser(template, "userName", "jo@foo.com");
 
-		addUser(JOE_ID, "Joe", "joespassword");
-		addUser(MABEL_ID, "mabel", "mabelspassword");
+        addUser(JOE_ID, "Joe", "joespassword");
+        addUser(MABEL_ID, "mabel", "mabelspassword");
 
-	}
+    }
 
-	@After
-	public void clearDb() throws Exception {
-		TestUtils.deleteFrom(dataSource, "users");
-	}
+    @After
+    public void clearDb() throws Exception {
+        TestUtils.deleteFrom(dataSource, "users");
+    }
 
-	@Test
-	public void getValidUserSucceeds() {
-		UaaUser joe = db.retrieveUserByName("joe");
-		assertNotNull(joe);
-		assertEquals(JOE_ID, joe.getId());
-		assertEquals("Joe", joe.getUsername());
-		assertEquals("joe@test.org", joe.getEmail());
-		assertEquals("joespassword", joe.getPassword());
-		assertTrue("authorities does not contain uaa.user", joe.getAuthorities().contains(new SimpleGrantedAuthority("uaa.user")));
-	}
+    @Test
+    public void getValidUserSucceeds() {
+        UaaUser joe = db.retrieveUserByName("joe");
+        assertNotNull(joe);
+        assertEquals(JOE_ID, joe.getId());
+        assertEquals("Joe", joe.getUsername());
+        assertEquals("joe@test.org", joe.getEmail());
+        assertEquals("joespassword", joe.getPassword());
+        assertTrue("authorities does not contain uaa.user", joe.getAuthorities().contains(new SimpleGrantedAuthority("uaa.user")));
+    }
 
-	@Test
-	public void getValidUserCaseInsensitive() {
-		UaaUser joe = db.retrieveUserByName("JOE");
-		assertNotNull(joe);
-		assertEquals(JOE_ID, joe.getId());
-		assertEquals("Joe", joe.getUsername());
-		assertEquals("joe@test.org", joe.getEmail());
-		assertEquals("joespassword", joe.getPassword());
-		assertTrue("authorities does not contain uaa.user", joe.getAuthorities().contains(new SimpleGrantedAuthority("uaa.user")));
-	}
+    @Test
+    public void getValidUserCaseInsensitive() {
+        UaaUser joe = db.retrieveUserByName("JOE");
+        assertNotNull(joe);
+        assertEquals(JOE_ID, joe.getId());
+        assertEquals("Joe", joe.getUsername());
+        assertEquals("joe@test.org", joe.getEmail());
+        assertEquals("joespassword", joe.getPassword());
+        assertTrue("authorities does not contain uaa.user", joe.getAuthorities().contains(new SimpleGrantedAuthority("uaa.user")));
+    }
 
-	@Test(expected = UsernameNotFoundException.class)
-	public void getNonExistentUserRaisedNotFoundException() {
-		db.retrieveUserByName("jo");
-	}
+    @Test(expected = UsernameNotFoundException.class)
+    public void getNonExistentUserRaisedNotFoundException() {
+        db.retrieveUserByName("jo");
+    }
 
-	@Test
-	public void getUserWithExtraAuthorities() {
-		addAuthority("dash.admin", JOE_ID);
-		UaaUser joe = db.retrieveUserByName("joe");
-		assertTrue("authorities does not contain uaa.user", joe.getAuthorities().contains(new SimpleGrantedAuthority("uaa.user")));
-		assertTrue("authorities does not contain dash.admin", joe.getAuthorities().contains(new SimpleGrantedAuthority("dash.admin")));
-	}
+    @Test
+    public void getUserWithExtraAuthorities() {
+        addAuthority("dash.admin", JOE_ID);
+        UaaUser joe = db.retrieveUserByName("joe");
+        assertTrue("authorities does not contain uaa.user", joe.getAuthorities().contains(new SimpleGrantedAuthority("uaa.user")));
+        assertTrue("authorities does not contain dash.admin", joe.getAuthorities().contains(new SimpleGrantedAuthority("dash.admin")));
+    }
 }

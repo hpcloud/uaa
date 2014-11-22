@@ -22,5 +22,5 @@ import org.springframework.security.core.Authentication;
  */
 public interface AccountLoginPolicy {
 
-	boolean isAllowed(UaaUser user, Authentication a);
+    boolean isAllowed(UaaUser user, Authentication a);
 }

@@ -25,28 +25,28 @@ import org.springframework.security.oauth2.provider.ClientDetails;
  */
 public class SecretFailureEvent extends AbstractClientAdminEvent {
 
-	private String message;
+    private String message;
 
-	public SecretFailureEvent(String message, Principal principal) {
-		this(message, null, principal);
-	}
+    public SecretFailureEvent(String message, Principal principal) {
+        this(message, null, principal);
+    }
 
-	public SecretFailureEvent(String message, ClientDetails client, Principal principal) {
-		super(client, principal);
-		this.message = message;
-	}
+    public SecretFailureEvent(String message, ClientDetails client, Principal principal) {
+        super(client, principal);
+        this.message = message;
+    }
 
-	@Override
-	public AuditEvent getAuditEvent() {
-		ClientDetails client = getClient();
-		if (client == null) {
-			return createAuditRecord(getPrincipal().getName(), AuditEventType.SecretChangeFailure,
-					getOrigin(getPrincipal()), message);
-		}
-		else {
-			return createAuditRecord(client.getClientId(), AuditEventType.SecretChangeFailure,
-					getOrigin(getPrincipal()), message);
-		}
-	}
+    @Override
+    public AuditEvent getAuditEvent() {
+        ClientDetails client = getClient();
+        if (client == null) {
+            return createAuditRecord(getPrincipal().getName(), AuditEventType.SecretChangeFailure,
+                    getOrigin(getPrincipal()), message);
+        }
+        else {
+            return createAuditRecord(client.getClientId(), AuditEventType.SecretChangeFailure,
+                    getOrigin(getPrincipal()), message);
+        }
+    }
 
 }

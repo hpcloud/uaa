@@ -16,13 +16,13 @@ import java.util.List;
 
 public interface ApprovalStore {
 
-	public boolean addApproval (Approval approval);
+    public boolean addApproval (Approval approval);
 
-	public boolean revokeApproval (Approval approval);
+    public boolean revokeApproval (Approval approval);
 
-	public boolean revokeApprovals (String filter);
+    public boolean revokeApprovals (String filter);
 
-	public List<Approval> getApprovals (String filter);
+    public List<Approval> getApprovals (String filter);
 
-	public List<Approval> getApprovals (String userName, String clientId);
+    public List<Approval> getApprovals (String userName, String clientId);
 }

@@ -55,116 +55,116 @@ import org.springframework.util.ClassUtils;
  */
 public class ClientAuthenticationFilter extends AbstractPreAuthenticatedProcessingFilter {
 
-	private PreAuthenticatedPrincipalSource<?> principalSource;
+    private PreAuthenticatedPrincipalSource<?> principalSource;
 
-	private boolean oauthAvailable = false;
+    private boolean oauthAvailable = false;
 
-	private boolean oauth2Available = false;
+    private boolean oauth2Available = false;
 
-	/**
-	 * @param principalSource the PreAuthenticatedPrincipalSource to set
-	 */
-	public void setPreAuthenticatedPrincipalSource(PreAuthenticatedPrincipalSource<?> principalSource) {
-		this.principalSource = principalSource;
-	}
+    /**
+     * @param principalSource the PreAuthenticatedPrincipalSource to set
+     */
+    public void setPreAuthenticatedPrincipalSource(PreAuthenticatedPrincipalSource<?> principalSource) {
+        this.principalSource = principalSource;
+    }
 
-	@Override
-	public void afterPropertiesSet() {
-		Assert.state(principalSource != null, "User info source must be provided");
-		super.afterPropertiesSet();
-		try {
-			oauth2Available = ClassUtils.isPresent(AccessTokenRequiredException.class.getName(),
-					ClassUtils.getDefaultClassLoader());
-		}
-		catch (NoClassDefFoundError e) {
-			// ignore
-		}
-		try {
-			oauthAvailable = ClassUtils.isPresent(
-					org.springframework.security.oauth.consumer.AccessTokenRequiredException.class.getName(),
-					ClassUtils.getDefaultClassLoader());
-		}
-		catch (NoClassDefFoundError e) {
-			// ignore
-		}
-	}
+    @Override
+    public void afterPropertiesSet() {
+        Assert.state(principalSource != null, "User info source must be provided");
+        super.afterPropertiesSet();
+        try {
+            oauth2Available = ClassUtils.isPresent(AccessTokenRequiredException.class.getName(),
+                    ClassUtils.getDefaultClassLoader());
+        }
+        catch (NoClassDefFoundError e) {
+            // ignore
+        }
+        try {
+            oauthAvailable = ClassUtils.isPresent(
+                    org.springframework.security.oauth.consumer.AccessTokenRequiredException.class.getName(),
+                    ClassUtils.getDefaultClassLoader());
+        }
+        catch (NoClassDefFoundError e) {
+            // ignore
+        }
+    }
 
-	public ClientAuthenticationFilter(String defaultFilterProcessesUrl) {
-		setAuthenticationManager(new DefaultFriendlyAuthenticationManager());
-	}
+    public ClientAuthenticationFilter(String defaultFilterProcessesUrl) {
+        setAuthenticationManager(new DefaultFriendlyAuthenticationManager());
+    }
 
-	@Override
-	protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException failed) {
-		// Need to force a redirect via the OAuth client filter, so rethrow here if OAuth related
-		if (oauth2Available && failed instanceof SocialRedirectException) {
-			throw ((SocialRedirectException) failed).getUserRedirectException();
-		}
-		if (oauthAvailable
-				&& failed instanceof org.springframework.security.oauth.consumer.AccessTokenRequiredException) {
-			throw failed;
-		}
-		else {
-			// If the exception is not a Spring Security exception this will result in a default error page
-			super.unsuccessfulAuthentication(request, response, failed);
-		}
-	}
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException failed) {
+        // Need to force a redirect via the OAuth client filter, so rethrow here if OAuth related
+        if (oauth2Available && failed instanceof SocialRedirectException) {
+            throw ((SocialRedirectException) failed).getUserRedirectException();
+        }
+        if (oauthAvailable
+                && failed instanceof org.springframework.security.oauth.consumer.AccessTokenRequiredException) {
+            throw failed;
+        }
+        else {
+            // If the exception is not a Spring Security exception this will result in a default error page
+            super.unsuccessfulAuthentication(request, response, failed);
+        }
+    }
 
-	@Override
-	protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-		try {
-			Object result = principalSource.getPrincipal();
-			return result;
-		}
-		catch (UserRedirectRequiredException e) {
-			throw new SocialRedirectException(e);
-		}
-	}
+    @Override
+    protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
+        try {
+            Object result = principalSource.getPrincipal();
+            return result;
+        }
+        catch (UserRedirectRequiredException e) {
+            throw new SocialRedirectException(e);
+        }
+    }
 
-	@Override
-	protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
-		return "N/A";
-	}
+    @Override
+    protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
+        return "N/A";
+    }
 
-	private static class DefaultFriendlyAuthenticationManager implements AuthenticationManager {
+    private static class DefaultFriendlyAuthenticationManager implements AuthenticationManager {
 
-		@Override
-		public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        @Override
+        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 
-			boolean authenticated = authentication.isAuthenticated();
+            boolean authenticated = authentication.isAuthenticated();
 
-			// If not already authenticated (the default) from the parent class
-			if (authentication instanceof PreAuthenticatedAuthenticationToken && !authenticated) {
+            // If not already authenticated (the default) from the parent class
+            if (authentication instanceof PreAuthenticatedAuthenticationToken && !authenticated) {
 
-				PreAuthenticatedAuthenticationToken preAuth = (PreAuthenticatedAuthenticationToken) authentication;
-				// Look inside the principal and see if that was marked as authenticated
-				if (preAuth.getPrincipal() instanceof Authentication) {
-					Authentication principal = (Authentication) preAuth.getPrincipal();
-					preAuth = new PreAuthenticatedAuthenticationToken(principal, preAuth.getCredentials(), principal.getAuthorities());
-					authenticated = principal.isAuthenticated();
-				}
-				preAuth.setAuthenticated(authenticated);
+                PreAuthenticatedAuthenticationToken preAuth = (PreAuthenticatedAuthenticationToken) authentication;
+                // Look inside the principal and see if that was marked as authenticated
+                if (preAuth.getPrincipal() instanceof Authentication) {
+                    Authentication principal = (Authentication) preAuth.getPrincipal();
+                    preAuth = new PreAuthenticatedAuthenticationToken(principal, preAuth.getCredentials(), principal.getAuthorities());
+                    authenticated = principal.isAuthenticated();
+                }
+                preAuth.setAuthenticated(authenticated);
 
-				authentication = preAuth;
+                authentication = preAuth;
 
-			}
+            }
 
-			return authentication;
+            return authentication;
 
-		}
+        }
 
-	}
+    }
 
-	private static class SocialRedirectException extends AuthenticationException {
+    private static class SocialRedirectException extends AuthenticationException {
 
-		public SocialRedirectException(UserRedirectRequiredException e) {
-			super("Social user details extraction failed", e);
-		}
+        public SocialRedirectException(UserRedirectRequiredException e) {
+            super("Social user details extraction failed", e);
+        }
 
-		public UserRedirectRequiredException getUserRedirectException() {
-			return (UserRedirectRequiredException) getCause();
-		}
+        public UserRedirectRequiredException getUserRedirectException() {
+            return (UserRedirectRequiredException) getCause();
+        }
 
-	}
+    }
 
 }

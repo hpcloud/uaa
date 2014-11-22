@@ -42,78 +42,78 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ProfileValueSourceConfiguration (NullSafeSystemProfileValueSource.class)
 public class JdbcFailedLoginCountingAuditServiceTests {
 
-	@Autowired
-	private DataSource dataSource;
+    @Autowired
+    private DataSource dataSource;
 
-	private JdbcTemplate template;
+    private JdbcTemplate template;
 
-	private JdbcFailedLoginCountingAuditService auditService;
+    private JdbcFailedLoginCountingAuditService auditService;
 
-	private String authDetails;
+    private String authDetails;
 
-	@Before
-	public void createService() throws Exception {
-		template = new JdbcTemplate(dataSource);
-		auditService = new JdbcFailedLoginCountingAuditService(dataSource);
-		template.execute("DELETE FROM sec_audit WHERE principal_id='1' or principal_id='clientA' or principal_id='clientB'");
-		authDetails = "1.1.1.1";
-	}
+    @Before
+    public void createService() throws Exception {
+        template = new JdbcTemplate(dataSource);
+        auditService = new JdbcFailedLoginCountingAuditService(dataSource);
+        template.execute("DELETE FROM sec_audit WHERE principal_id='1' or principal_id='clientA' or principal_id='clientB'");
+        authDetails = "1.1.1.1";
+    }
 
-	@Test
-	public void userAuthenticationFailureAuditSucceeds() throws Exception {
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
-		Thread.sleep(100);
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
-		List<AuditEvent> events = auditService.find("1", 0);
-		assertEquals(2, events.size());
-		assertEquals("1", events.get(0).getPrincipalId());
-		assertEquals("joe", events.get(0).getData());
-		assertEquals("1.1.1.1", events.get(0).getOrigin());
-	}
+    @Test
+    public void userAuthenticationFailureAuditSucceeds() throws Exception {
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
+        Thread.sleep(100);
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
+        List<AuditEvent> events = auditService.find("1", 0);
+        assertEquals(2, events.size());
+        assertEquals("1", events.get(0).getPrincipalId());
+        assertEquals("joe", events.get(0).getData());
+        assertEquals("1.1.1.1", events.get(0).getOrigin());
+    }
 
-	@Test
-	public void userAuthenticationFailureDeletesOldData() throws Exception {
-		long now = System.currentTimeMillis();
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
-		assertEquals(1, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
-		// Set the created column to 3 hours past
-		template.update("update sec_audit set created=?", new Timestamp(now - 3*3600*1000));
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
-		assertEquals(1, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
-	}
+    @Test
+    public void userAuthenticationFailureDeletesOldData() throws Exception {
+        long now = System.currentTimeMillis();
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
+        assertEquals(1, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
+        // Set the created column to 3 hours past
+        template.update("update sec_audit set created=?", new Timestamp(now - 3*3600*1000));
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
+        assertEquals(1, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
+    }
 
-	@Test
-	public void userAuthenticationSuccessResetsData() throws Exception {
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
-		assertEquals(1, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
-		auditService.log(getAuditEvent(UserAuthenticationSuccess, "1", "joe"));
-		assertEquals(0, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
-	}
+    @Test
+    public void userAuthenticationSuccessResetsData() throws Exception {
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
+        assertEquals(1, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
+        auditService.log(getAuditEvent(UserAuthenticationSuccess, "1", "joe"));
+        assertEquals(0, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
+    }
 
-	@Test
-	public void userPasswordChangeSuccessResetsData() throws Exception {
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
-		assertEquals(1, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
-		auditService.log(getAuditEvent(PasswordChangeSuccess, "1", "joe"));
-		assertEquals(0, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
-	}
+    @Test
+    public void userPasswordChangeSuccessResetsData() throws Exception {
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
+        assertEquals(1, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
+        auditService.log(getAuditEvent(PasswordChangeSuccess, "1", "joe"));
+        assertEquals(0, template.queryForInt("select count(*) from sec_audit where principal_id='1'"));
+    }
 
-	@Test
-	public void findMethodOnlyReturnsEventsWithinRequestedPeriod() {
-		long now = System.currentTimeMillis();
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
-		// Set the created column to one hour past
-		template.update("update sec_audit set created=?", new Timestamp(now - 3600*1000));
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
-		auditService.log(getAuditEvent(UserAuthenticationFailure, "2", "joe"));
-		// Find events within last 2 mins
-		List<AuditEvent> events = auditService.find("1", now - 120*1000);
-		assertEquals(1, events.size());
-	}
+    @Test
+    public void findMethodOnlyReturnsEventsWithinRequestedPeriod() {
+        long now = System.currentTimeMillis();
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
+        // Set the created column to one hour past
+        template.update("update sec_audit set created=?", new Timestamp(now - 3600*1000));
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "1", "joe"));
+        auditService.log(getAuditEvent(UserAuthenticationFailure, "2", "joe"));
+        // Find events within last 2 mins
+        List<AuditEvent> events = auditService.find("1", now - 120*1000);
+        assertEquals(1, events.size());
+    }
 
-	private AuditEvent getAuditEvent(AuditEventType type, String principal, String data) {
-		return new AuditEvent(type, principal, authDetails, data, System.currentTimeMillis());
-	}
+    private AuditEvent getAuditEvent(AuditEventType type, String principal, String data) {
+        return new AuditEvent(type, principal, authDetails, data, System.currentTimeMillis());
+    }
 
 }
 

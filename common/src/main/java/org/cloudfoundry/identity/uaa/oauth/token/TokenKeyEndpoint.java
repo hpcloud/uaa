@@ -37,38 +37,38 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class TokenKeyEndpoint implements InitializingBean {
 
-	protected final Log logger = LogFactory.getLog(getClass());
+    protected final Log logger = LogFactory.getLog(getClass());
 
-	private SignerProvider signerProvider;
+    private SignerProvider signerProvider;
 
-	/**
-	 * @param signerProvider the signerProvider to set
-	 */
-	public void setSignerProvider(SignerProvider signerProvider) {
-		this.signerProvider = signerProvider;
-	}
+    /**
+     * @param signerProvider the signerProvider to set
+     */
+    public void setSignerProvider(SignerProvider signerProvider) {
+        this.signerProvider = signerProvider;
+    }
 
-	/**
-	 * Get the verification key for the token signatures. The principal has to be provided only if the key is secret
-	 * (shared not public).
-	 * 
-	 * @param principal the currently authenticated user if there is one
-	 * @return the key used to verify tokens
-	 */
-	@RequestMapping(value = "/token_key", method = RequestMethod.GET)
-	@ResponseBody
-	public Map<String, String> getKey(Principal principal) {
-		if ((principal == null || principal instanceof AnonymousAuthenticationToken) && !signerProvider.isPublic()) {
-			throw new AccessDeniedException("You need to authenticate to see a shared key");
-		}
-		Map<String, String> result = new LinkedHashMap<String, String>();
-		result.put("alg", signerProvider.getSigner().algorithm());
-		result.put("value", signerProvider.getVerifierKey());
-		return result;
-	}
+    /**
+     * Get the verification key for the token signatures. The principal has to be provided only if the key is secret
+     * (shared not public).
+     * 
+     * @param principal the currently authenticated user if there is one
+     * @return the key used to verify tokens
+     */
+    @RequestMapping(value = "/token_key", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, String> getKey(Principal principal) {
+        if ((principal == null || principal instanceof AnonymousAuthenticationToken) && !signerProvider.isPublic()) {
+            throw new AccessDeniedException("You need to authenticate to see a shared key");
+        }
+        Map<String, String> result = new LinkedHashMap<String, String>();
+        result.put("alg", signerProvider.getSigner().algorithm());
+        result.put("value", signerProvider.getVerifierKey());
+        return result;
+    }
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		Assert.state(this.signerProvider != null, "A SignerProvider must be provided");
-	}
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.state(this.signerProvider != null, "A SignerProvider must be provided");
+    }
 }

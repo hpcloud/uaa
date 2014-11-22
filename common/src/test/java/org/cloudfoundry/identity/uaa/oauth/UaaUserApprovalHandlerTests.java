@@ -34,45 +34,45 @@ import org.springframework.security.oauth2.provider.token.AuthorizationServerTok
  *
  */
 public class UaaUserApprovalHandlerTests {
-	
-	private UaaUserApprovalHandler handler = new UaaUserApprovalHandler();
-	
-	private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
-	
-	private AuthorizationServerTokenServices tokenServices = Mockito.mock(AuthorizationServerTokenServices.class);
-	
-	private DefaultAuthorizationRequest authorizationRequest = new DefaultAuthorizationRequest("client", Arrays.asList("read"));
+    
+    private UaaUserApprovalHandler handler = new UaaUserApprovalHandler();
+    
+    private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
+    
+    private AuthorizationServerTokenServices tokenServices = Mockito.mock(AuthorizationServerTokenServices.class);
+    
+    private DefaultAuthorizationRequest authorizationRequest = new DefaultAuthorizationRequest("client", Arrays.asList("read"));
 
-	private Authentication userAuthentication = new UsernamePasswordAuthenticationToken("joe", "", AuthorityUtils.commaSeparatedStringToAuthorityList("USER"));
-	
-	{
-		handler.setClientDetailsService(clientDetailsService);
-		handler.setTokenServices(tokenServices);
-	}
+    private Authentication userAuthentication = new UsernamePasswordAuthenticationToken("joe", "", AuthorityUtils.commaSeparatedStringToAuthorityList("USER"));
+    
+    {
+        handler.setClientDetailsService(clientDetailsService);
+        handler.setTokenServices(tokenServices);
+    }
 
-	@Test
-	public void testNotAutoApprove() {
-		BaseClientDetails client = new BaseClientDetails("client", "none", "read,write", "authorization_code", "uaa.none");
-		Mockito.when(clientDetailsService.loadClientByClientId("client")).thenReturn(client);
-		assertFalse(handler.isApproved(authorizationRequest, userAuthentication));
-	}
+    @Test
+    public void testNotAutoApprove() {
+        BaseClientDetails client = new BaseClientDetails("client", "none", "read,write", "authorization_code", "uaa.none");
+        Mockito.when(clientDetailsService.loadClientByClientId("client")).thenReturn(client);
+        assertFalse(handler.isApproved(authorizationRequest, userAuthentication));
+    }
 
-	@Test
-	public void testAutoApproveAll() {
-		BaseClientDetails client = new BaseClientDetails("client", "none", "read,write", "authorization_code", "uaa.none");
-		client.setAdditionalInformation(Collections.singletonMap("autoapprove", true));
-		Mockito.when(clientDetailsService.loadClientByClientId("client")).thenReturn(client);
-		assertTrue(handler.isApproved(authorizationRequest, userAuthentication));
-	}
+    @Test
+    public void testAutoApproveAll() {
+        BaseClientDetails client = new BaseClientDetails("client", "none", "read,write", "authorization_code", "uaa.none");
+        client.setAdditionalInformation(Collections.singletonMap("autoapprove", true));
+        Mockito.when(clientDetailsService.loadClientByClientId("client")).thenReturn(client);
+        assertTrue(handler.isApproved(authorizationRequest, userAuthentication));
+    }
 
-	@Test
-	public void testAutoApproveByScope() {
-		BaseClientDetails client = new BaseClientDetails("client", "none", "read,write", "authorization_code", "uaa.none");
-		Mockito.when(clientDetailsService.loadClientByClientId("client")).thenReturn(client);
-		client.setAdditionalInformation(Collections.singletonMap("autoapprove", Collections.singleton("read")));
-		assertTrue(handler.isApproved(authorizationRequest, userAuthentication));
-		client.setAdditionalInformation(Collections.singletonMap("autoapprove", Collections.singleton("write")));
-		assertFalse(handler.isApproved(authorizationRequest, userAuthentication));
-	}
+    @Test
+    public void testAutoApproveByScope() {
+        BaseClientDetails client = new BaseClientDetails("client", "none", "read,write", "authorization_code", "uaa.none");
+        Mockito.when(clientDetailsService.loadClientByClientId("client")).thenReturn(client);
+        client.setAdditionalInformation(Collections.singletonMap("autoapprove", Collections.singleton("read")));
+        assertTrue(handler.isApproved(authorizationRequest, userAuthentication));
+        client.setAdditionalInformation(Collections.singletonMap("autoapprove", Collections.singleton("write")));
+        assertFalse(handler.isApproved(authorizationRequest, userAuthentication));
+    }
 
 }

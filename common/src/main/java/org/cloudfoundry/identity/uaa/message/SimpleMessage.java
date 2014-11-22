@@ -22,41 +22,41 @@ import java.io.Serializable;
  *
  */
 public class SimpleMessage implements Serializable {
-	
-	private String status;
-	
-	private String message;
-	
-	@SuppressWarnings("unused")
-	private SimpleMessage() {
-	}
+    
+    private String status;
+    
+    private String message;
+    
+    @SuppressWarnings("unused")
+    private SimpleMessage() {
+    }
 
-	public SimpleMessage(String status, String message) {
-		this.status = status;
-		this.message = message;
-	}
+    public SimpleMessage(String status, String message) {
+        this.status = status;
+        this.message = message;
+    }
 
-	public String getStatus() {
-		return status;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public String getMessage() {
+        return message;
+    }
 
-	@Override
-	public String toString() {
-		return "{\"status\"=\"" + status + "\",\"message\"=\"" + message + "\"}";
-	}
+    @Override
+    public String toString() {
+        return "{\"status\"=\"" + status + "\",\"message\"=\"" + message + "\"}";
+    }
 
-	@Override
-	public int hashCode() {
-		return toString().hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof SimpleMessage && toString().equals(obj.toString());
-	}
-	
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SimpleMessage && toString().equals(obj.toString());
+    }
+    
 }

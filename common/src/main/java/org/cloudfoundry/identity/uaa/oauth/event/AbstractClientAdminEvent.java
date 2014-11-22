@@ -22,21 +22,21 @@ import org.springframework.security.oauth2.provider.ClientDetails;
  */
 abstract class AbstractClientAdminEvent extends AbstractUaaEvent {
 
-	private Principal principal;
-	private ClientDetails client;
+    private Principal principal;
+    private ClientDetails client;
 
-	public AbstractClientAdminEvent(ClientDetails client, Principal principal) {
-		super(principal);
-		this.client = client;
-		this.principal = principal;
-	}
-	
-	ClientDetails getClient() {
-		return client;
-	}
-	
-	Principal getPrincipal() {
-		return principal;
-	}
+    public AbstractClientAdminEvent(ClientDetails client, Principal principal) {
+        super(principal);
+        this.client = client;
+        this.principal = principal;
+    }
+    
+    ClientDetails getClient() {
+        return client;
+    }
+    
+    Principal getPrincipal() {
+        return principal;
+    }
 
 }

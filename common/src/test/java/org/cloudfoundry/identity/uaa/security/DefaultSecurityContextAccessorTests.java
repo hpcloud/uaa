@@ -30,47 +30,47 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
  */
 public class DefaultSecurityContextAccessorTests {
 
-	@After
-	public void clearContext() throws Exception {
-		SecurityContextHolder.clearContext();
-	}
+    @After
+    public void clearContext() throws Exception {
+        SecurityContextHolder.clearContext();
+    }
 
-	@Test
-	public void clientIsNotUser() throws Exception {
-		SecurityContextHolder.getContext().setAuthentication(
-				new UsernamePasswordAuthenticationToken("client", "secret", UaaAuthority.ADMIN_AUTHORITIES));
+    @Test
+    public void clientIsNotUser() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("client", "secret", UaaAuthority.ADMIN_AUTHORITIES));
 
-		assertFalse(new DefaultSecurityContextAccessor().isUser());
-	}
+        assertFalse(new DefaultSecurityContextAccessor().isUser());
+    }
 
-	@Test
-	public void uaaUserIsUser() throws Exception {
-		SecurityContextHolder.getContext().setAuthentication(
-				UaaAuthenticationTestFactory.getAuthentication("1234", "user", "user@test.org"));
+    @Test
+    public void uaaUserIsUser() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(
+                UaaAuthenticationTestFactory.getAuthentication("1234", "user", "user@test.org"));
 
-		assertTrue(new DefaultSecurityContextAccessor().isUser());
-	}
+        assertTrue(new DefaultSecurityContextAccessor().isUser());
+    }
 
-	@Test
-	public void adminUserIsAdmin() throws Exception {
-		SecurityContextHolder.getContext().setAuthentication(
-				new UsernamePasswordAuthenticationToken("user", "password", UaaAuthority.ADMIN_AUTHORITIES));
+    @Test
+    public void adminUserIsAdmin() throws Exception {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("user", "password", UaaAuthority.ADMIN_AUTHORITIES));
 
-		assertTrue(new DefaultSecurityContextAccessor().isAdmin());
-	}
+        assertTrue(new DefaultSecurityContextAccessor().isAdmin());
+    }
 
-	@Test
-	public void adminClientIsAdmin() throws Exception {
+    @Test
+    public void adminClientIsAdmin() throws Exception {
 
-		BaseClientDetails client = new BaseClientDetails();
-		client.setAuthorities(UaaAuthority.ADMIN_AUTHORITIES);
+        BaseClientDetails client = new BaseClientDetails();
+        client.setAuthorities(UaaAuthority.ADMIN_AUTHORITIES);
 
-		DefaultAuthorizationRequest authorizationRequest = new DefaultAuthorizationRequest("admin", null);
-		authorizationRequest.addClientDetails(client);
-		SecurityContextHolder.getContext().setAuthentication(new OAuth2Authentication(authorizationRequest, null));
+        DefaultAuthorizationRequest authorizationRequest = new DefaultAuthorizationRequest("admin", null);
+        authorizationRequest.addClientDetails(client);
+        SecurityContextHolder.getContext().setAuthentication(new OAuth2Authentication(authorizationRequest, null));
 
-		assertTrue(new DefaultSecurityContextAccessor().isAdmin());
+        assertTrue(new DefaultSecurityContextAccessor().isAdmin());
 
-	}
+    }
 
 }

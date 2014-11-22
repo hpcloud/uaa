@@ -21,8 +21,8 @@ package org.cloudfoundry.identity.uaa.oauth;
  */
 public class NoSuchTokenException extends RuntimeException {
 
-	public NoSuchTokenException(String message) {
-		super(message);
-	}
+    public NoSuchTokenException(String message) {
+        super(message);
+    }
 
 }

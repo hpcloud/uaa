@@ -28,59 +28,59 @@ import org.springframework.security.authentication.BadCredentialsException;
  */
 public class JsonAwareAuthenticationEntryPointTests {
 
-	private JsonAwareAuthenticationEntryPoint entryPoint = new JsonAwareAuthenticationEntryPoint();
+    private JsonAwareAuthenticationEntryPoint entryPoint = new JsonAwareAuthenticationEntryPoint();
 
-	private MockHttpServletRequest request = new MockHttpServletRequest();
+    private MockHttpServletRequest request = new MockHttpServletRequest();
 
-	private MockHttpServletResponse response = new MockHttpServletResponse();
+    private MockHttpServletResponse response = new MockHttpServletResponse();
 
-	{
-		entryPoint.setRealmName("UAA");
-	}
+    {
+        entryPoint.setRealmName("UAA");
+    }
 
-	@Test(expected = IllegalStateException.class)
-	public void testAfterPropertiesSet() throws Exception {
-		entryPoint = new JsonAwareAuthenticationEntryPoint();
-		entryPoint.afterPropertiesSet();
-	}
+    @Test(expected = IllegalStateException.class)
+    public void testAfterPropertiesSet() throws Exception {
+        entryPoint = new JsonAwareAuthenticationEntryPoint();
+        entryPoint.afterPropertiesSet();
+    }
 
-	@Test
-	public void testCommenceWithJson() throws Exception {
-		request.addHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
-		entryPoint.commence(request, response, new BadCredentialsException("Bad"));
-		assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
-		assertEquals("{\"error\":\"Bad\"}", response.getContentAsString());
-		assertEquals(null, response.getErrorMessage());
-	}
+    @Test
+    public void testCommenceWithJson() throws Exception {
+        request.addHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
+        entryPoint.commence(request, response, new BadCredentialsException("Bad"));
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
+        assertEquals("{\"error\":\"Bad\"}", response.getContentAsString());
+        assertEquals(null, response.getErrorMessage());
+    }
 
-	@Test
-	public void testTypeName() throws Exception {
-		entryPoint.setTypeName("Foo");
-		entryPoint.commence(request, response, new BadCredentialsException("Bad"));
-		assertEquals("Foo realm=\"UAA\"", response.getHeader("WWW-Authenticate"));
-	}
+    @Test
+    public void testTypeName() throws Exception {
+        entryPoint.setTypeName("Foo");
+        entryPoint.commence(request, response, new BadCredentialsException("Bad"));
+        assertEquals("Foo realm=\"UAA\"", response.getHeader("WWW-Authenticate"));
+    }
 
-	@Test
-	public void testCommenceWithEmptyAccept() throws Exception {
-		entryPoint.commence(request, response, new BadCredentialsException("Bad"));
-		assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
-		assertEquals("Bad", response.getErrorMessage());
-	}
+    @Test
+    public void testCommenceWithEmptyAccept() throws Exception {
+        entryPoint.commence(request, response, new BadCredentialsException("Bad"));
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
+        assertEquals("Bad", response.getErrorMessage());
+    }
 
-	@Test
-	public void testCommenceWithHtmlAccept() throws Exception {
-		request.addHeader("Accept", MediaType.TEXT_HTML_VALUE);
-		entryPoint.commence(request, response, new BadCredentialsException("Bad"));
-		assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
-		assertEquals("Bad", response.getErrorMessage());
-	}
+    @Test
+    public void testCommenceWithHtmlAccept() throws Exception {
+        request.addHeader("Accept", MediaType.TEXT_HTML_VALUE);
+        entryPoint.commence(request, response, new BadCredentialsException("Bad"));
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
+        assertEquals("Bad", response.getErrorMessage());
+    }
 
-	@Test
-	public void testCommenceWithHtmlAndJsonAccept() throws Exception {
-		request.addHeader("Accept", String.format("%s,%s", MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON));
-		entryPoint.commence(request, response, new BadCredentialsException("Bad"));
-		assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
-		assertEquals(null, response.getErrorMessage());
-	}
+    @Test
+    public void testCommenceWithHtmlAndJsonAccept() throws Exception {
+        request.addHeader("Accept", String.format("%s,%s", MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON));
+        entryPoint.commence(request, response, new BadCredentialsException("Bad"));
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
+        assertEquals(null, response.getErrorMessage());
+    }
 
 }

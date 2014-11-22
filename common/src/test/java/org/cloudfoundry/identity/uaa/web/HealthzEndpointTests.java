@@ -18,11 +18,11 @@ import org.junit.Test;
 
 public class HealthzEndpointTests {
 
-	private HealthzEndpoint endpoint = new HealthzEndpoint();
+    private HealthzEndpoint endpoint = new HealthzEndpoint();
 
-	@Test
-	public void testGetHealthz() throws Exception {
-		assertEquals("ok\n", endpoint.getHealthz());
-	}
+    @Test
+    public void testGetHealthz() throws Exception {
+        assertEquals("ok\n", endpoint.getHealthz());
+    }
 
 }

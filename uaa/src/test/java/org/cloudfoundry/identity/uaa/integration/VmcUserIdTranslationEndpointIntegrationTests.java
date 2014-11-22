@@ -47,101 +47,101 @@ import org.springframework.web.client.RestOperations;
 @OAuth2ContextConfiguration(OAuth2ContextConfiguration.Implicit.class)
 public class VmcUserIdTranslationEndpointIntegrationTests {
 
-	private final String JOE = "joe" + new RandomValueStringGenerator().generate().toLowerCase();
+    private final String JOE = "joe" + new RandomValueStringGenerator().generate().toLowerCase();
 
-	private final String userEndpoint = "/Users";
+    private final String userEndpoint = "/Users";
 
-	private final String idsEndpoint = "/ids/Users";
+    private final String idsEndpoint = "/ids/Users";
 
-	private ScimUser joe;
+    private ScimUser joe;
 
-	@Rule
-	public ServerRunning serverRunning = ServerRunning.isRunning();
+    @Rule
+    public ServerRunning serverRunning = ServerRunning.isRunning();
 
-	private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
+    private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
 
-	@Rule
-	public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
+    @Rule
+    public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
 
-	@Rule
-	public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
+    @Rule
+    public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
 
-	@BeforeOAuth2Context
-	@OAuth2ContextConfiguration(OAuth2ContextConfiguration.ClientCredentials.class)
-	public void setUpUserAccounts() {
+    @BeforeOAuth2Context
+    @OAuth2ContextConfiguration(OAuth2ContextConfiguration.ClientCredentials.class)
+    public void setUpUserAccounts() {
 
-		// If running against vcap we don't want to run these tests because they create new user accounts
-		// Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
+        // If running against vcap we don't want to run these tests because they create new user accounts
+        // Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
 
-		RestOperations client = serverRunning.getRestTemplate();
+        RestOperations client = serverRunning.getRestTemplate();
 
-		ScimUser user = new ScimUser();
-		user.setUserName(JOE);
-		user.setName(new ScimUser.Name("Joe", "User"));
-		user.addEmail("joe@blah.com");
-		user.setGroups(Arrays.asList(new Group(null, "uaa.user"), new Group(null, "orgs.foo")));
+        ScimUser user = new ScimUser();
+        user.setUserName(JOE);
+        user.setName(new ScimUser.Name("Joe", "User"));
+        user.addEmail("joe@blah.com");
+        user.setGroups(Arrays.asList(new Group(null, "uaa.user"), new Group(null, "orgs.foo")));
 
-		ResponseEntity<ScimUser> newuser = client.postForEntity(serverRunning.getUrl(userEndpoint), user,
-				ScimUser.class);
+        ResponseEntity<ScimUser> newuser = client.postForEntity(serverRunning.getUrl(userEndpoint), user,
+                ScimUser.class);
 
-		joe = newuser.getBody();
-		assertEquals(JOE, joe.getUserName());
+        joe = newuser.getBody();
+        assertEquals(JOE, joe.getUserName());
 
-		PasswordChangeRequest change = new PasswordChangeRequest();
-		change.setPassword("password");
+        PasswordChangeRequest change = new PasswordChangeRequest();
+        change.setPassword("password");
 
-		HttpHeaders headers = new HttpHeaders();
-		ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
-				HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
-		assertEquals(HttpStatus.OK, result.getStatusCode());
+        HttpHeaders headers = new HttpHeaders();
+        ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
+                HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
+        assertEquals(HttpStatus.OK, result.getStatusCode());
 
-		// The implicit grant for vmc requires extra parameters in the authorization request
-		context.setParameters(Collections.singletonMap("credentials",
-				testAccounts.getJsonCredentials(joe.getUserName(), "password")));
+        // The implicit grant for vmc requires extra parameters in the authorization request
+        context.setParameters(Collections.singletonMap("credentials",
+                testAccounts.getJsonCredentials(joe.getUserName(), "password")));
 
-	}
+    }
 
-	@Test
-	@Ignore // XXX Ignoring all tests: user id translation not supported in AOK
-	public void findUsersWithExplicitFilterSucceeds() throws Exception {
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=userName eq '" + JOE + "'", Map.class);
-		@SuppressWarnings("unchecked")
-		Map<String, Object> results = response.getBody();
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertEquals(1, results.get("totalResults"));
-	}
+    @Test
+    @Ignore // XXX Ignoring all tests: user id translation not supported in AOK
+    public void findUsersWithExplicitFilterSucceeds() throws Exception {
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=userName eq '" + JOE + "'", Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> results = response.getBody();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, results.get("totalResults"));
+    }
 
-	@Test
-	@Ignore
-	public void findUsersExplicitEmailFails() throws Exception {
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=emails.value sw 'joe'", Map.class);
-		@SuppressWarnings("unchecked")
-		Map<String, Object> results = response.getBody();
-		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-		assertNotNull("There should be an error", results.get("error"));
-	}
+    @Test
+    @Ignore
+    public void findUsersExplicitEmailFails() throws Exception {
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=emails.value sw 'joe'", Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> results = response.getBody();
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull("There should be an error", results.get("error"));
+    }
 
-	@Test
-	@Ignore
-	public void findUsersExplicitPresentFails() throws Exception {
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=pr userType", Map.class);
-		@SuppressWarnings("unchecked")
-		Map<String, Object> results = response.getBody();
-		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-		assertNotNull("There should be an error", results.get("error"));
-	}
+    @Test
+    @Ignore
+    public void findUsersExplicitPresentFails() throws Exception {
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=pr userType", Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> results = response.getBody();
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull("There should be an error", results.get("error"));
+    }
 
-	@Test
-	@Ignore
-	public void findUsersExplicitGroupFails() throws Exception {
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=groups.display co 'foo'", Map.class);
-		@SuppressWarnings("unchecked")
-		Map<String, Object> results = response.getBody();
-		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-		assertNotNull("There should be an error", results.get("error"));
-	}
+    @Test
+    @Ignore
+    public void findUsersExplicitGroupFails() throws Exception {
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.getForObject(idsEndpoint + "?filter=groups.display co 'foo'", Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> results = response.getBody();
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull("There should be an error", results.get("error"));
+    }
 }

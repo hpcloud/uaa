@@ -25,20 +25,20 @@ import org.junit.Test;
  */
 public class UaaAuthorityTests {
 
-	@Test
-	public void testGetAuthority() {
-		assertEquals("uaa.user", UaaAuthority.UAA_USER.getAuthority());
-	}
+    @Test
+    public void testGetAuthority() {
+        assertEquals("uaa.user", UaaAuthority.UAA_USER.getAuthority());
+    }
 
-	@Test
-	public void testValueOf() {
-		assertEquals(0, UaaAuthority.UAA_USER.value());
-		assertEquals(1, UaaAuthority.UAA_ADMIN.value());
-	}
+    @Test
+    public void testValueOf() {
+        assertEquals(0, UaaAuthority.UAA_USER.value());
+        assertEquals(1, UaaAuthority.UAA_ADMIN.value());
+    }
 
-	@Test
-	public void testAdminFromAuthorities() {
-		assertEquals(UaaAuthority.UAA_ADMIN, UaaAuthority.fromAuthorities("uaa.user,uaa.admin"));
-	}
+    @Test
+    public void testAdminFromAuthorities() {
+        assertEquals(UaaAuthority.UAA_ADMIN, UaaAuthority.fromAuthorities("uaa.user,uaa.admin"));
+    }
 
 }

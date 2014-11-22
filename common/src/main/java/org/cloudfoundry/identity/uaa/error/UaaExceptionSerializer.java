@@ -26,20 +26,20 @@ import org.codehaus.jackson.map.SerializerProvider;
  */
 public class UaaExceptionSerializer extends JsonSerializer<UaaException> {
 
-	@Override
-	public void serialize(UaaException value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
-			JsonProcessingException {
-        jgen.writeStartObject();
-		jgen.writeStringField("error", value.getErrorCode());
-		jgen.writeStringField("error_description", value.getMessage());
-		if (value.getAdditionalInformation()!=null) {
-			for (Entry<String, String> entry : value.getAdditionalInformation().entrySet()) {
-				String key = entry.getKey();
-				String add = entry.getValue();
-				jgen.writeStringField(key, add);				
-			}
-		}
-        jgen.writeEndObject();
-	}
+    @Override
+    public void serialize(UaaException value, JsonGenerator jgen, SerializerProvider provider) throws IOException,
+            JsonProcessingException {
+    jgen.writeStartObject();
+        jgen.writeStringField("error", value.getErrorCode());
+        jgen.writeStringField("error_description", value.getMessage());
+        if (value.getAdditionalInformation()!=null) {
+            for (Entry<String, String> entry : value.getAdditionalInformation().entrySet()) {
+                String key = entry.getKey();
+                String add = entry.getValue();
+                jgen.writeStringField(key, add);                
+            }
+        }
+    jgen.writeEndObject();
+    }
 
 }

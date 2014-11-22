@@ -33,60 +33,60 @@ import org.springframework.security.oauth2.provider.token.AuthenticationKeyGener
  */
 public class UaaAuthenticationKeyGenerator implements AuthenticationKeyGenerator {
 
-	private static final String CLIENT_ID = "client_id";
+    private static final String CLIENT_ID = "client_id";
 
-	private static final String SCOPE = "scope";
+    private static final String SCOPE = "scope";
 
-	private static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
+    private static final String ACCESS_TOKEN_VALIDITY = "access_token_validity";
 
-	private static final String REFRESH_TOKEN_VALIDITY = "refresh_token_validity";
+    private static final String REFRESH_TOKEN_VALIDITY = "refresh_token_validity";
 
-	private UserTokenConverter userTokenConverter = new UaaUserTokenConverter();
+    private UserTokenConverter userTokenConverter = new UaaUserTokenConverter();
 
-	private ClientDetailsService clientDetailsService;
+    private ClientDetailsService clientDetailsService;
 
-	/**
-	 * @param clientDetailsService the clientDetailsService to set
-	 */
-	public void setClientDetailsService(ClientDetailsService clientDetailsService) {
-		this.clientDetailsService = clientDetailsService;
-	}
+    /**
+     * @param clientDetailsService the clientDetailsService to set
+     */
+    public void setClientDetailsService(ClientDetailsService clientDetailsService) {
+        this.clientDetailsService = clientDetailsService;
+    }
 
-	@Override
-	public String extractKey(OAuth2Authentication authentication) {
-		Map<String, Object> values = new LinkedHashMap<String, Object>();
-		AuthorizationRequest authorizationRequest = authentication.getAuthorizationRequest();
-		if (!authentication.isClientOnly()) {
-			values.putAll(userTokenConverter.convertUserAuthentication(authentication.getUserAuthentication()));
-		}
-		ClientDetails client = clientDetailsService.loadClientByClientId(authorizationRequest.getClientId());
-		values.put(CLIENT_ID, client.getClientId());
-		if (authorizationRequest.getScope() != null) {
-			values.put(SCOPE, OAuth2Utils.formatParameterList(authorizationRequest.getScope()));
-		}
-		Integer validity = client.getAccessTokenValiditySeconds();
-		if (validity != null) {
-			values.put(ACCESS_TOKEN_VALIDITY, validity);
-		}
-		validity = client.getRefreshTokenValiditySeconds();
-		if (validity != null && client.getAuthorizedGrantTypes().contains("refresh_token")) {
-			values.put(REFRESH_TOKEN_VALIDITY, validity);
-		}
-		MessageDigest digest;
-		try {
-			digest = MessageDigest.getInstance("MD5");
-		}
-		catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException("MD5 algorithm not available.  Fatal (should be in the JDK).");
-		}
+    @Override
+    public String extractKey(OAuth2Authentication authentication) {
+        Map<String, Object> values = new LinkedHashMap<String, Object>();
+        AuthorizationRequest authorizationRequest = authentication.getAuthorizationRequest();
+        if (!authentication.isClientOnly()) {
+            values.putAll(userTokenConverter.convertUserAuthentication(authentication.getUserAuthentication()));
+        }
+        ClientDetails client = clientDetailsService.loadClientByClientId(authorizationRequest.getClientId());
+        values.put(CLIENT_ID, client.getClientId());
+        if (authorizationRequest.getScope() != null) {
+            values.put(SCOPE, OAuth2Utils.formatParameterList(authorizationRequest.getScope()));
+        }
+        Integer validity = client.getAccessTokenValiditySeconds();
+        if (validity != null) {
+            values.put(ACCESS_TOKEN_VALIDITY, validity);
+        }
+        validity = client.getRefreshTokenValiditySeconds();
+        if (validity != null && client.getAuthorizedGrantTypes().contains("refresh_token")) {
+            values.put(REFRESH_TOKEN_VALIDITY, validity);
+        }
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("MD5");
+        }
+        catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("MD5 algorithm not available.  Fatal (should be in the JDK).");
+        }
 
-		try {
-			byte[] bytes = digest.digest(values.toString().getBytes("UTF-8"));
-			return String.format("%032x", new BigInteger(1, bytes));
-		}
-		catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException("UTF-8 encoding not available.  Fatal (should be in the JDK).");
-		}
-	}
+        try {
+            byte[] bytes = digest.digest(values.toString().getBytes("UTF-8"));
+            return String.format("%032x", new BigInteger(1, bytes));
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 encoding not available.  Fatal (should be in the JDK).");
+        }
+    }
 
 }

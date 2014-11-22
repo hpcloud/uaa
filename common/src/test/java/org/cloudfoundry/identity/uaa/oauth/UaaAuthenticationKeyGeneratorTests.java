@@ -35,29 +35,29 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
  */
 public class UaaAuthenticationKeyGeneratorTests {
 
-	private UaaAuthenticationKeyGenerator generator = new UaaAuthenticationKeyGenerator();
+    private UaaAuthenticationKeyGenerator generator = new UaaAuthenticationKeyGenerator();
 
-	private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
+    private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
 
-	private AuthorizationRequest authorizationRequest = new DefaultAuthorizationRequest("client", Arrays.asList("read",
-			"write"));
+    private AuthorizationRequest authorizationRequest = new DefaultAuthorizationRequest("client", Arrays.asList("read",
+            "write"));
 
-	private UaaAuthentication userAuthentication = UaaAuthenticationTestFactory.getAuthentication("FOO", "foo",
-			"foo@test.org");
+    private UaaAuthentication userAuthentication = UaaAuthenticationTestFactory.getAuthentication("FOO", "foo",
+            "foo@test.org");
 
-	@Before
-	public void init() {
-		ClientDetails client = new BaseClientDetails("client", "none", "read,write", "authorization_code", "uaa.none");
-		Mockito.when(clientDetailsService.loadClientByClientId("client")).thenReturn(client);
-		generator.setClientDetailsService(clientDetailsService);
-	}
+    @Before
+    public void init() {
+        ClientDetails client = new BaseClientDetails("client", "none", "read,write", "authorization_code", "uaa.none");
+        Mockito.when(clientDetailsService.loadClientByClientId("client")).thenReturn(client);
+        generator.setClientDetailsService(clientDetailsService);
+    }
 
-	@Test
-	public void testEmailChanges() {
-		String key1 = generator.extractKey(new OAuth2Authentication(authorizationRequest, userAuthentication));
-		userAuthentication = UaaAuthenticationTestFactory.getAuthentication("FOO", "foo", "foo@none.org");
-		String key2 = generator.extractKey(new OAuth2Authentication(authorizationRequest, userAuthentication));
-		assertNotSame(key1, key2);
-	}
+    @Test
+    public void testEmailChanges() {
+        String key1 = generator.extractKey(new OAuth2Authentication(authorizationRequest, userAuthentication));
+        userAuthentication = UaaAuthenticationTestFactory.getAuthentication("FOO", "foo", "foo@none.org");
+        String key2 = generator.extractKey(new OAuth2Authentication(authorizationRequest, userAuthentication));
+        assertNotSame(key1, key2);
+    }
 
 }

@@ -35,54 +35,54 @@ import org.springframework.web.client.RestTemplate;
  */
 public class RemoteTokenServicesTests {
 
-	private RemoteTokenServices services = new RemoteTokenServices();
+    private RemoteTokenServices services = new RemoteTokenServices();
 
-	private Map<String, Object> body = new HashMap<String, Object>();
+    private Map<String, Object> body = new HashMap<String, Object>();
 
-	private HttpHeaders headers = new HttpHeaders();
+    private HttpHeaders headers = new HttpHeaders();
 
-	private HttpStatus status = HttpStatus.OK;
+    private HttpStatus status = HttpStatus.OK;
 
-	public RemoteTokenServicesTests() {
-		services.setClientId("client");
-		services.setClientSecret("secret");
-		body.put(Claims.CLIENT_ID, "remote");
-		body.put(Claims.USER_NAME, "olds");
-		body.put(Claims.EMAIL, "olds@vmware.com");
-		body.put(Claims.USER_ID, "HDGFJSHGDF");
-		services.setRestTemplate(new RestTemplate() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity,
-					Class<T> responseType, Object... uriVariables) throws RestClientException {
-				return new ResponseEntity<T>((T) body, headers, status);
-			}
-		});
-	}
+    public RemoteTokenServicesTests() {
+        services.setClientId("client");
+        services.setClientSecret("secret");
+        body.put(Claims.CLIENT_ID, "remote");
+        body.put(Claims.USER_NAME, "olds");
+        body.put(Claims.EMAIL, "olds@vmware.com");
+        body.put(Claims.USER_ID, "HDGFJSHGDF");
+        services.setRestTemplate(new RestTemplate() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public <T> ResponseEntity<T> exchange(String url, HttpMethod method, HttpEntity<?> requestEntity,
+                    Class<T> responseType, Object... uriVariables) throws RestClientException {
+                return new ResponseEntity<T>((T) body, headers, status);
+            }
+        });
+    }
 
-	@Test
-	public void testTokenRetrieval() throws Exception {
-		OAuth2Authentication result = services.loadAuthentication("FOO");
-		assertNotNull(result);
-		assertEquals("remote", result.getAuthorizationRequest().getClientId());
-		assertEquals("olds", result.getUserAuthentication().getName());
-		assertEquals("HDGFJSHGDF", ((RemoteUserAuthentication)result.getUserAuthentication()).getId());
-	}
+    @Test
+    public void testTokenRetrieval() throws Exception {
+        OAuth2Authentication result = services.loadAuthentication("FOO");
+        assertNotNull(result);
+        assertEquals("remote", result.getAuthorizationRequest().getClientId());
+        assertEquals("olds", result.getUserAuthentication().getName());
+        assertEquals("HDGFJSHGDF", ((RemoteUserAuthentication)result.getUserAuthentication()).getId());
+    }
 
-	@Test
-	public void testTokenRetrievalWithClientAuthorities() throws Exception {
-		body.put("client_authorities", Collections.singleton("uaa.none"));
-		OAuth2Authentication result = services.loadAuthentication("FOO");
-		assertNotNull(result);
-		assertEquals("[uaa.none]", result.getAuthorizationRequest().getAuthorities().toString());
-	}
+    @Test
+    public void testTokenRetrievalWithClientAuthorities() throws Exception {
+        body.put("client_authorities", Collections.singleton("uaa.none"));
+        OAuth2Authentication result = services.loadAuthentication("FOO");
+        assertNotNull(result);
+        assertEquals("[uaa.none]", result.getAuthorizationRequest().getAuthorities().toString());
+    }
 
-	@Test
-	public void testTokenRetrievalWithUserAuthorities() throws Exception {
-		body.put("user_authorities", Collections.singleton("uaa.user"));
-		OAuth2Authentication result = services.loadAuthentication("FOO");
-		assertNotNull(result);
-		assertEquals("[uaa.user]", result.getUserAuthentication().getAuthorities().toString());
-	}
+    @Test
+    public void testTokenRetrievalWithUserAuthorities() throws Exception {
+        body.put("user_authorities", Collections.singleton("uaa.user"));
+        OAuth2Authentication result = services.loadAuthentication("FOO");
+        assertNotNull(result);
+        assertEquals("[uaa.user]", result.getUserAuthentication().getAuthorities().toString());
+    }
 
 }

@@ -49,108 +49,108 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  */
 public class AuthzAuthenticationManager implements AuthenticationManager, ApplicationEventPublisherAware {
 
-	private final Log logger = LogFactory.getLog(getClass());
-	private final PasswordEncoder encoder;
-	private final UaaUserDatabase userDatabase;
-	private ApplicationEventPublisher eventPublisher;
-	private AccountLoginPolicy accountLoginPolicy = new PermitAllAccountLoginPolicy();
-	/**
-	 * Dummy user allows the authentication process for non-existent and locked out users to be as close to
-	 * that of normal users as possible to avoid differences in timing.
-	 */
-	private final UaaUser dummyUser;
+    private final Log logger = LogFactory.getLog(getClass());
+    private final PasswordEncoder encoder;
+    private final UaaUserDatabase userDatabase;
+    private ApplicationEventPublisher eventPublisher;
+    private AccountLoginPolicy accountLoginPolicy = new PermitAllAccountLoginPolicy();
+    /**
+     * Dummy user allows the authentication process for non-existent and locked out users to be as close to
+     * that of normal users as possible to avoid differences in timing.
+     */
+    private final UaaUser dummyUser;
 
-	public AuthzAuthenticationManager(UaaUserDatabase cfusers) {
-		this(cfusers, new BCryptPasswordEncoder());
-	}
+    public AuthzAuthenticationManager(UaaUserDatabase cfusers) {
+        this(cfusers, new BCryptPasswordEncoder());
+    }
 
-	public AuthzAuthenticationManager(UaaUserDatabase userDatabase, PasswordEncoder encoder) {
-		this.userDatabase = userDatabase;
-		this.encoder = encoder;
-		this.dummyUser = createDummyUser();
-	}
+    public AuthzAuthenticationManager(UaaUserDatabase userDatabase, PasswordEncoder encoder) {
+        this.userDatabase = userDatabase;
+        this.encoder = encoder;
+        this.dummyUser = createDummyUser();
+    }
 
-	@Override
-	public Authentication authenticate(Authentication req) throws AuthenticationException {
-		logger.debug("Processing authentication request for " + req.getName());
+    @Override
+    public Authentication authenticate(Authentication req) throws AuthenticationException {
+        logger.debug("Processing authentication request for " + req.getName());
 
-		if (req.getCredentials() == null) {
-			BadCredentialsException e = new BadCredentialsException("No password supplied");
-			publish(new AuthenticationFailureBadCredentialsEvent(req, e));
-			throw e;
-		}
+        if (req.getCredentials() == null) {
+            BadCredentialsException e = new BadCredentialsException("No password supplied");
+            publish(new AuthenticationFailureBadCredentialsEvent(req, e));
+            throw e;
+        }
 
-		UaaUser user;
-		try {
-			user = userDatabase.retrieveUserByName(req.getName().toLowerCase(Locale.US));
-		}
-		catch (UsernameNotFoundException e) {
-			user = dummyUser;
-		}
+        UaaUser user;
+        try {
+            user = userDatabase.retrieveUserByName(req.getName().toLowerCase(Locale.US));
+        }
+        catch (UsernameNotFoundException e) {
+            user = dummyUser;
+        }
 
-		final boolean passwordMatches = encoder.matches((CharSequence) req.getCredentials(), user.getPassword());
+        final boolean passwordMatches = encoder.matches((CharSequence) req.getCredentials(), user.getPassword());
 
-		if (!accountLoginPolicy.isAllowed(user, req)) {
-			logger.warn("Login policy rejected authentication for " + user.getUsername() + ", " + user.getId()
-					+ ". Ignoring login request.");
-			BadCredentialsException e = new BadCredentialsException("Login policy rejected authentication");
-			publish(new AuthenticationFailureLockedEvent(req, e));
-			throw e;
-		}
+        if (!accountLoginPolicy.isAllowed(user, req)) {
+            logger.warn("Login policy rejected authentication for " + user.getUsername() + ", " + user.getId()
+                    + ". Ignoring login request.");
+            BadCredentialsException e = new BadCredentialsException("Login policy rejected authentication");
+            publish(new AuthenticationFailureLockedEvent(req, e));
+            throw e;
+        }
 
-		if (passwordMatches) {
-			logger.debug("Password successfully matched");
-			Authentication success = new UaaAuthentication(new UaaPrincipal(user),
-						user.getAuthorities(), (UaaAuthenticationDetails) req.getDetails());
-			publish(new UserAuthenticationSuccessEvent(user, success));
+        if (passwordMatches) {
+            logger.debug("Password successfully matched");
+            Authentication success = new UaaAuthentication(new UaaPrincipal(user),
+                        user.getAuthorities(), (UaaAuthenticationDetails) req.getDetails());
+            publish(new UserAuthenticationSuccessEvent(user, success));
 
-			return success;
-		}
+            return success;
+        }
 
-		if (user == dummyUser) {
-			logger.debug("No user named '" + req.getName() + "' was found");
-			publish(new UserNotFoundEvent(req));
-		} else {
-			logger.debug("Password did not match for user " + req.getName());
-			publish(new UserAuthenticationFailureEvent(user, req));
-		}
-		BadCredentialsException e = new BadCredentialsException("Bad credentials");
-		publish(new AuthenticationFailureBadCredentialsEvent(req, e));
-		throw e;
-	}
-	
-	private void publish(ApplicationEvent event) {
-		if (eventPublisher!=null) {
-			eventPublisher.publishEvent(event);
-		}
-	}
+        if (user == dummyUser) {
+            logger.debug("No user named '" + req.getName() + "' was found");
+            publish(new UserNotFoundEvent(req));
+        } else {
+            logger.debug("Password did not match for user " + req.getName());
+            publish(new UserAuthenticationFailureEvent(user, req));
+        }
+        BadCredentialsException e = new BadCredentialsException("Bad credentials");
+        publish(new AuthenticationFailureBadCredentialsEvent(req, e));
+        throw e;
+    }
+    
+    private void publish(ApplicationEvent event) {
+        if (eventPublisher!=null) {
+            eventPublisher.publishEvent(event);
+        }
+    }
 
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
-		this.eventPublisher = eventPublisher;
-	}
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
 
-	public void setAccountLoginPolicy(AccountLoginPolicy accountLoginPolicy) {
-		this.accountLoginPolicy = accountLoginPolicy;
-	}
+    public void setAccountLoginPolicy(AccountLoginPolicy accountLoginPolicy) {
+        this.accountLoginPolicy = accountLoginPolicy;
+    }
 
-	private UaaUser createDummyUser() {
-		// Create random unguessable password
-		SecureRandom random = new SecureRandom();
-		byte[] passBytes = new byte[16];
-		random.nextBytes(passBytes);
-		String password = encoder.encode(new String(Hex.encode(passBytes)));
-		// Unique ID which isn't in the database
-		final String id = UUID.randomUUID().toString();
+    private UaaUser createDummyUser() {
+        // Create random unguessable password
+        SecureRandom random = new SecureRandom();
+        byte[] passBytes = new byte[16];
+        random.nextBytes(passBytes);
+        String password = encoder.encode(new String(Hex.encode(passBytes)));
+        // Unique ID which isn't in the database
+        final String id = UUID.randomUUID().toString();
 
-		return new UaaUser("dummy_user", password, "dummy_user", "dummy", "dummy") {
-			public final String getId() {
-				return id;
-			}
+        return new UaaUser("dummy_user", password, "dummy_user", "dummy", "dummy") {
+            public final String getId() {
+                return id;
+            }
 
-			public final List<? extends GrantedAuthority> getAuthorities() {
-				throw new IllegalStateException();
-			}
-		};
-	}
+            public final List<? extends GrantedAuthority> getAuthorities() {
+                throw new IllegalStateException();
+            }
+        };
+    }
 }

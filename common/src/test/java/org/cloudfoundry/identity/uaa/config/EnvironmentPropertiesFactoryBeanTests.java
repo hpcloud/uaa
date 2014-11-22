@@ -29,28 +29,28 @@ import org.springframework.util.StringUtils;
  */
 public class EnvironmentPropertiesFactoryBeanTests {
 
-	@Test
-	public void testDefaultProperties() throws Exception {
-		EnvironmentPropertiesFactoryBean factory = new EnvironmentPropertiesFactoryBean();
-		factory.setDefaultProperties(getProperties("foo=foo"));
-		Properties properties = factory.getObject();
-		assertEquals("foo", properties.get("foo"));
-	}
+    @Test
+    public void testDefaultProperties() throws Exception {
+        EnvironmentPropertiesFactoryBean factory = new EnvironmentPropertiesFactoryBean();
+        factory.setDefaultProperties(getProperties("foo=foo"));
+        Properties properties = factory.getObject();
+        assertEquals("foo", properties.get("foo"));
+    }
 
-	@Test
-	public void testNullProperties() throws Exception {
-		EnvironmentPropertiesFactoryBean factory = new EnvironmentPropertiesFactoryBean();
-		StandardEnvironment environment = new StandardEnvironment();
-		environment.getPropertySources().addFirst(new MapPropertySource("foo", Collections.singletonMap("foo", null)));
-		factory.setEnvironment(environment);
-		Properties properties = factory.getObject();
-		assertEquals("", properties.get("foo"));
-	}
+    @Test
+    public void testNullProperties() throws Exception {
+        EnvironmentPropertiesFactoryBean factory = new EnvironmentPropertiesFactoryBean();
+        StandardEnvironment environment = new StandardEnvironment();
+        environment.getPropertySources().addFirst(new MapPropertySource("foo", Collections.singletonMap("foo", null)));
+        factory.setEnvironment(environment);
+        Properties properties = factory.getObject();
+        assertEquals("", properties.get("foo"));
+    }
 
-	private Properties getProperties(String input) {
-		Properties properties = StringUtils.splitArrayElementsIntoProperties(
-				StringUtils.commaDelimitedListToStringArray(input), "=");
-		return properties;
-	}
+    private Properties getProperties(String input) {
+        Properties properties = StringUtils.splitArrayElementsIntoProperties(
+                StringUtils.commaDelimitedListToStringArray(input), "=");
+        return properties;
+    }
 
 }

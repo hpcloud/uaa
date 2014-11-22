@@ -25,29 +25,29 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  */
 public class InMemoryUaaUserDatabase implements UaaUserDatabase {
 
-	private final Map<String, UaaUser> users;
+    private final Map<String, UaaUser> users;
 
-	public InMemoryUaaUserDatabase(Map<String, UaaUser> users) {
-		this.users = users;
-	}
+    public InMemoryUaaUserDatabase(Map<String, UaaUser> users) {
+        this.users = users;
+    }
 
-	@Override
-	public UaaUser retrieveUserByName(String username) throws UsernameNotFoundException {
+    @Override
+    public UaaUser retrieveUserByName(String username) throws UsernameNotFoundException {
 
-		UaaUser u = users.get(username);
-		if (u == null) {
-			throw new UsernameNotFoundException("User " + username + " not found");
-		}
-		return u;
+        UaaUser u = users.get(username);
+        if (u == null) {
+            throw new UsernameNotFoundException("User " + username + " not found");
+        }
+        return u;
 
-	}
+    }
 
-	public void updateUser(String username, UaaUser user) throws UsernameNotFoundException {
+    public void updateUser(String username, UaaUser user) throws UsernameNotFoundException {
 
-		if (!users.containsKey(username)) {
-			throw new UsernameNotFoundException("User " + username + " not found");
-		}
-		users.put(username, user);
-	}
+        if (!users.containsKey(username)) {
+            throw new UsernameNotFoundException("User " + username + " not found");
+        }
+        users.put(username, user);
+    }
 
 }

@@ -18,25 +18,25 @@ package org.cloudfoundry.identity.uaa.error;
  *
  */
 public class ExceptionReport {
-	
-	private final Exception exception;
-	private final boolean trace;
+    
+    private final Exception exception;
+    private final boolean trace;
 
-	public ExceptionReport(Exception exception) {
-		this(exception, false);
-	}
+    public ExceptionReport(Exception exception) {
+        this(exception, false);
+    }
 
-	public ExceptionReport(Exception exception, boolean trace) {
-		this.exception = exception;
-		this.trace = trace;
-	}
+    public ExceptionReport(Exception exception, boolean trace) {
+        this.exception = exception;
+        this.trace = trace;
+    }
 
-	public Exception getException() {
-		return exception;
-	}
+    public Exception getException() {
+        return exception;
+    }
 
-	public boolean isTrace() {
-		return trace;
-	}
+    public boolean isTrace() {
+        return trace;
+    }
 
 }

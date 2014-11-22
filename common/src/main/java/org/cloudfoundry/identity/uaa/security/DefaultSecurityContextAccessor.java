@@ -29,83 +29,83 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
  */
 public class DefaultSecurityContextAccessor implements SecurityContextAccessor {
 
-	@Override
-	public boolean isClient() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+    @Override
+    public boolean isClient() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
 
-		if (!(a instanceof OAuth2Authentication)) {
-			return false;
-		}
+        if (!(a instanceof OAuth2Authentication)) {
+            return false;
+        }
 
-		return ((OAuth2Authentication) a).isClientOnly();
-	}
+        return ((OAuth2Authentication) a).isClientOnly();
+    }
 
-	@Override
-	public boolean isUser() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+    @Override
+    public boolean isUser() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
 
-		if (a instanceof OAuth2Authentication) {
-			return !isClient();
-		}
-		
-		if (a instanceof UaaAuthentication) {
-			return true;
-		}
+        if (a instanceof OAuth2Authentication) {
+            return !isClient();
+        }
+        
+        if (a instanceof UaaAuthentication) {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	@Override
-	public boolean isAdmin() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
-		return a!=null && AuthorityUtils.authorityListToSet(a.getAuthorities()).contains("uaa.admin");
-	}
+    @Override
+    public boolean isAdmin() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return a!=null && AuthorityUtils.authorityListToSet(a.getAuthorities()).contains("uaa.admin");
+    }
 
-	@Override
-	public String getUserId() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
-		return a==null ? null : ((UaaPrincipal) a.getPrincipal()).getId();
-	}
-	
-	@Override
-	public String getUserName() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
-		return a==null ? null : a.getName();
-	}
+    @Override
+    public String getUserId() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return a==null ? null : ((UaaPrincipal) a.getPrincipal()).getId();
+    }
+    
+    @Override
+    public String getUserName() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return a==null ? null : a.getName();
+    }
 
-	@Override
-	public String getAuthenticationInfo() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+    @Override
+    public String getAuthenticationInfo() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
 
-		if (a instanceof OAuth2Authentication) {
-			OAuth2Authentication oauth = ((OAuth2Authentication) a);
+        if (a instanceof OAuth2Authentication) {
+            OAuth2Authentication oauth = ((OAuth2Authentication) a);
 
-			String info = getClientId();
-			if (!oauth.isClientOnly()) {
-				info = info + "; " + a.getName() + "; " + getUserId();
-			}
+            String info = getClientId();
+            if (!oauth.isClientOnly()) {
+                info = info + "; " + a.getName() + "; " + getUserId();
+            }
 
-			return info;
-		} else {
-			return a.getName();
-		}
-	}
+            return info;
+        } else {
+            return a.getName();
+        }
+    }
 
-	@Override
-	public String getClientId() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
+    @Override
+    public String getClientId() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
 
-		if (!(a instanceof OAuth2Authentication)) {
-			return null;
-		}
+        if (!(a instanceof OAuth2Authentication)) {
+            return null;
+        }
 
-		return ((OAuth2Authentication) a).getAuthorizationRequest().getClientId();
-	}
+        return ((OAuth2Authentication) a).getAuthorizationRequest().getClientId();
+    }
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
-		return a == null ? Collections.<GrantedAuthority>emptySet() : a.getAuthorities();
-	}
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return a == null ? Collections.<GrantedAuthority>emptySet() : a.getAuthorities();
+    }
 
 }

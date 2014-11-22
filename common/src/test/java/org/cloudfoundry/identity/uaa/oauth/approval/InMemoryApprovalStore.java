@@ -22,44 +22,44 @@ import java.util.List;
  */
 public class InMemoryApprovalStore implements ApprovalStore {
 
-	private ArrayList<Approval> store = new ArrayList<Approval>();
+    private ArrayList<Approval> store = new ArrayList<Approval>();
 
-	@Override
-	public boolean addApproval(Approval approval) {
-		return store.add(approval);
-	}
+    @Override
+    public boolean addApproval(Approval approval) {
+        return store.add(approval);
+    }
 
-	@Override
-	public boolean revokeApproval(Approval approval) {
-		for (Approval a : store) {
-			if (a.equals(approval)) {
-				store.remove(a);
-				return true;
-			}
-		}
-		return false;
-	}
+    @Override
+    public boolean revokeApproval(Approval approval) {
+        for (Approval a : store) {
+            if (a.equals(approval)) {
+                store.remove(a);
+                return true;
+            }
+        }
+        return false;
+    }
 
-	@Override
-	public boolean revokeApprovals(String filter) {
-		return false;
-	}
+    @Override
+    public boolean revokeApprovals(String filter) {
+        return false;
+    }
 
-	@Override
-	public List<Approval> getApprovals(String filter) {
-		return null;
-	}
+    @Override
+    public List<Approval> getApprovals(String filter) {
+        return null;
+    }
 
-	@Override
-	public List<Approval> getApprovals(String userName, String clientId) {
-		ArrayList<Approval> returnList = new ArrayList<Approval>();
+    @Override
+    public List<Approval> getApprovals(String userName, String clientId) {
+        ArrayList<Approval> returnList = new ArrayList<Approval>();
 
-		for (Approval a : store) {
-			if (a.getUserName().equals(userName) && a.getClientId().equals(clientId)) {
-				returnList.add(a);
-			}
-		}
-		return returnList;
-	}
+        for (Approval a : store) {
+            if (a.getUserName().equals(userName) && a.getClientId().equals(clientId)) {
+                returnList.add(a);
+            }
+        }
+        return returnList;
+    }
 
 }

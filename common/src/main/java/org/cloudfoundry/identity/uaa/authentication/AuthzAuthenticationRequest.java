@@ -34,75 +34,75 @@ import org.springframework.util.StringUtils;
  */
 public class AuthzAuthenticationRequest implements Authentication {
 
-	private final UaaAuthenticationDetails details;
-	private final Map<String, String> info;
+    private final UaaAuthenticationDetails details;
+    private final Map<String, String> info;
 
-	public AuthzAuthenticationRequest(Map<String,String> info, UaaAuthenticationDetails details) {
-		this.info = Collections.unmodifiableMap(info);
-		Assert.notNull(details);
-		this.details = details;
-	}
+    public AuthzAuthenticationRequest(Map<String,String> info, UaaAuthenticationDetails details) {
+        this.info = Collections.unmodifiableMap(info);
+        Assert.notNull(details);
+        this.details = details;
+    }
 
-	public AuthzAuthenticationRequest(String username, String password, UaaAuthenticationDetails details) {
-		Assert.hasText(username, "username cannot be empty");
-		Assert.hasText(password, "password cannot be empty");
-		HashMap<String, String> info = new HashMap<String, String>();
-		info.put("username", username.trim());
-		info.put("password", password.trim());
-		this.info = Collections.unmodifiableMap(info);
-		this.details = details;
-	}
+    public AuthzAuthenticationRequest(String username, String password, UaaAuthenticationDetails details) {
+        Assert.hasText(username, "username cannot be empty");
+        Assert.hasText(password, "password cannot be empty");
+        HashMap<String, String> info = new HashMap<String, String>();
+        info.put("username", username.trim());
+        info.put("password", password.trim());
+        this.info = Collections.unmodifiableMap(info);
+        this.details = details;
+    }
 
-	public Map<String, String> getInfo() {
-		return info;
-	}
+    public Map<String, String> getInfo() {
+        return info;
+    }
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		if (null != info.get("authorities")) {
-			Collection<ExtendedUaaAuthority> returnAuthorities = new LinkedHashSet();
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (null != info.get("authorities")) {
+            Collection<ExtendedUaaAuthority> returnAuthorities = new LinkedHashSet();
 
-			String[] authorities = StringUtils.commaDelimitedListToStringArray(info.get("authorities"));
+            String[] authorities = StringUtils.commaDelimitedListToStringArray(info.get("authorities"));
 
-			for (String authority : authorities) {
-				returnAuthorities.add(new ExtendedUaaAuthority(authority, null));
-			}
+            for (String authority : authorities) {
+                returnAuthorities.add(new ExtendedUaaAuthority(authority, null));
+            }
 
-			return returnAuthorities;
-		} else {
-			return Collections.emptySet();
-		}
-	}
+            return returnAuthorities;
+        } else {
+            return Collections.emptySet();
+        }
+    }
 
-	@Override
-	public String getPrincipal() {
-		return info.get("username");
-	}
+    @Override
+    public String getPrincipal() {
+        return info.get("username");
+    }
 
-	@Override
-	public String getCredentials() {
-		return info.get("password");
-	}
+    @Override
+    public String getCredentials() {
+        return info.get("password");
+    }
 
-	@Override
-	public Object getDetails() {
-		return details;
-	}
+    @Override
+    public Object getDetails() {
+        return details;
+    }
 
-	@Override
-	public boolean isAuthenticated() {
-		return false;
-	}
+    @Override
+    public boolean isAuthenticated() {
+        return false;
+    }
 
-	@Override
-	public void setAuthenticated(boolean isAuthenticated) {
-		if (isAuthenticated) {
-			throw new IllegalArgumentException("Authentication request can not be 'authenticated'");
-		}
-	}
+    @Override
+    public void setAuthenticated(boolean isAuthenticated) {
+        if (isAuthenticated) {
+            throw new IllegalArgumentException("Authentication request can not be 'authenticated'");
+        }
+    }
 
-	@Override
-	public String getName() {
-		return getPrincipal();
-	}
+    @Override
+    public String getName() {
+        return getPrincipal();
+    }
 }

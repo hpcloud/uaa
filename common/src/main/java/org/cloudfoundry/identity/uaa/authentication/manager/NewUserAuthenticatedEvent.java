@@ -22,12 +22,12 @@ import org.springframework.context.ApplicationEvent;
  */
 public class NewUserAuthenticatedEvent extends ApplicationEvent {
 
-	public NewUserAuthenticatedEvent(UaaUser user) {
-		super(user);
-	}
-	
-	public UaaUser getUser() {
-		return (UaaUser) source;
-	}
+    public NewUserAuthenticatedEvent(UaaUser user) {
+        super(user);
+    }
+    
+    public UaaUser getUser() {
+        return (UaaUser) source;
+    }
 
 }

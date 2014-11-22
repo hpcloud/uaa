@@ -37,35 +37,35 @@ import org.springframework.web.bind.annotation.*;
  */
 @Controller
 public class RemoteAuthenticationEndpoint {
-	private final Log logger = LogFactory.getLog(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
-	private AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
 
-	public RemoteAuthenticationEndpoint(AuthenticationManager authenticationManager) {
-		this.authenticationManager = authenticationManager;
-	}
+    public RemoteAuthenticationEndpoint(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
 
-	@RequestMapping(value = { "/authenticate" }, method = RequestMethod.POST)
-	@ResponseBody
-	public HttpEntity<Map<String,String>> authenticate(HttpServletRequest request, @RequestParam("username") String username,
-			@RequestParam("password") String password) {
-		Map<String,String> responseBody = new HashMap<String,String>();
+    @RequestMapping(value = { "/authenticate" }, method = RequestMethod.POST)
+    @ResponseBody
+    public HttpEntity<Map<String,String>> authenticate(HttpServletRequest request, @RequestParam("username") String username,
+            @RequestParam("password") String password) {
+        Map<String,String> responseBody = new HashMap<String,String>();
 
-		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
-		token.setDetails(new UaaAuthenticationDetails(request));
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+        token.setDetails(new UaaAuthenticationDetails(request));
 
-		HttpStatus status = HttpStatus.UNAUTHORIZED;
-		try {
-			Authentication a = authenticationManager.authenticate(token);
-			responseBody.put("username", a.getName());
-			status = HttpStatus.OK;
-		} catch (AuthenticationException e) {
-			responseBody.put("error", "authentication failed");
-		} catch (Exception e) {
-			logger.info("Failed to authenticate user ", e);
-			status = HttpStatus.INTERNAL_SERVER_ERROR;
-		}
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        try {
+            Authentication a = authenticationManager.authenticate(token);
+            responseBody.put("username", a.getName());
+            status = HttpStatus.OK;
+        } catch (AuthenticationException e) {
+            responseBody.put("error", "authentication failed");
+        } catch (Exception e) {
+            logger.info("Failed to authenticate user ", e);
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
 
-		return new ResponseEntity<Map<String,String>>(responseBody, status);
-	}
+        return new ResponseEntity<Map<String,String>>(responseBody, status);
+    }
 }

@@ -20,44 +20,44 @@ import org.springframework.security.core.GrantedAuthority;
 
 public class StubSecurityContextAccessor implements SecurityContextAccessor {
 
-	@Override
-	public boolean isClient() {
-		return false;
-	}
+    @Override
+    public boolean isClient() {
+        return false;
+    }
 
-	@Override
-	public boolean isUser() {
-		return false;
-	}
+    @Override
+    public boolean isUser() {
+        return false;
+    }
 
-	@Override
-	public boolean isAdmin() {
-		return false;
-	}
+    @Override
+    public boolean isAdmin() {
+        return false;
+    }
 
-	@Override
-	public String getUserId() {
-		return null;
-	}
-	
-	@Override
-	public String getUserName() {
-		return null;
-	}
+    @Override
+    public String getUserId() {
+        return null;
+    }
+    
+    @Override
+    public String getUserName() {
+        return null;
+    }
 
-	@Override
-	public String getClientId() {
-		return null;
-	}
+    @Override
+    public String getClientId() {
+        return null;
+    }
 
-	@Override
-	public String getAuthenticationInfo() {
-		return null;
-	}
+    @Override
+    public String getAuthenticationInfo() {
+        return null;
+    }
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return Collections.emptySet();
-	}
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptySet();
+    }
 
 }

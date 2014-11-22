@@ -30,32 +30,32 @@ import org.springframework.security.oauth2.client.test.OAuth2ContextSetup;
 @OAuth2ContextConfiguration
 public class UserInfoEndpointIntegrationTests {
 
-	@Rule
-	public ServerRunning serverRunning = ServerRunning.isRunning();
-	
-	private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
-	
-	@Rule
-	public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
-	
-	@Rule
-	public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
-	
-	/**
-	 * tests a happy-day flow of the <code>/userinfo</code> endpoint
-	 */
-	@Test
-	public void testHappyDay() throws Exception {
+    @Rule
+    public ServerRunning serverRunning = ServerRunning.isRunning();
+    
+    private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
+    
+    @Rule
+    public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
+    
+    @Rule
+    public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
+    
+    /**
+     * tests a happy-day flow of the <code>/userinfo</code> endpoint
+     */
+    @Test
+    public void testHappyDay() throws Exception {
 
-		ResponseEntity<String> user = serverRunning.getForString("/userinfo");
-		assertEquals(HttpStatus.OK, user.getStatusCode());
+        ResponseEntity<String> user = serverRunning.getForString("/userinfo");
+        assertEquals(HttpStatus.OK, user.getStatusCode());
 
-		String map = user.getBody();
-		assertTrue(testAccounts.getUserName(), map.contains("user_id"));
-		assertTrue(testAccounts.getEmail(), map.contains("email"));
-		
-		System.err.println(user.getHeaders());
+        String map = user.getBody();
+        assertTrue(testAccounts.getUserName(), map.contains("user_id"));
+        assertTrue(testAccounts.getEmail(), map.contains("email"));
+        
+        System.err.println(user.getHeaders());
 
-	}
+    }
 
 }

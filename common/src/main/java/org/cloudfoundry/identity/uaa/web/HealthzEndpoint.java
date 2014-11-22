@@ -26,10 +26,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class HealthzEndpoint {
 
-	@RequestMapping("/healthz")
-	@ResponseBody
-	public String getHealthz() throws Exception {
-		return "ok\n";
-	}
+    @RequestMapping("/healthz")
+    @ResponseBody
+    public String getHealthz() throws Exception {
+        return "ok\n";
+    }
 
 }

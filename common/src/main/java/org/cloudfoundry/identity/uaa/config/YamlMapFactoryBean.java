@@ -61,53 +61,53 @@ import org.springframework.beans.factory.FactoryBean;
  */
 public class YamlMapFactoryBean extends YamlProcessor implements FactoryBean<Map<String, Object>> {
 
-	private Map<String, Object> instance;
+    private Map<String, Object> instance;
 
-	@Override
-	public Map<String, Object> getObject() {
-		if (instance==null) {
-			instance  = doGetObject();
-		}
-		return instance;
-	}
+    @Override
+    public Map<String, Object> getObject() {
+        if (instance==null) {
+            instance  = doGetObject();
+        }
+        return instance;
+    }
 
-	private Map<String, Object> doGetObject() {
-		final Map<String, Object> result = new LinkedHashMap<String, Object>();
-		MatchCallback callback = new MatchCallback() {
-			@Override
-			public void process(Properties properties, Map<String, Object> map) {
-				merge(result, map);
-			}
-		};
-		process(callback);
-		return result;
-	}
+    private Map<String, Object> doGetObject() {
+        final Map<String, Object> result = new LinkedHashMap<String, Object>();
+        MatchCallback callback = new MatchCallback() {
+            @Override
+            public void process(Properties properties, Map<String, Object> map) {
+                merge(result, map);
+            }
+        };
+        process(callback);
+        return result;
+    }
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void merge(Map<String, Object> output, Map<String, Object> map) {
-		for (Entry<String, Object> entry : map.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			Object existing = output.get(key);
-			if (value instanceof Map && existing instanceof Map) {
-				Map<String, Object> result = new LinkedHashMap<String, Object>((Map) existing);
-				merge(result, (Map) value);
-				output.put(key, result);
-			}
-			else {
-				output.put(key, value);
-			}
-		}
-	}
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void merge(Map<String, Object> output, Map<String, Object> map) {
+        for (Entry<String, Object> entry : map.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            Object existing = output.get(key);
+            if (value instanceof Map && existing instanceof Map) {
+                Map<String, Object> result = new LinkedHashMap<String, Object>((Map) existing);
+                merge(result, (Map) value);
+                output.put(key, result);
+            }
+            else {
+                output.put(key, value);
+            }
+        }
+    }
 
-	@Override
-	public Class<?> getObjectType() {
-		return Map.class;
-	}
+    @Override
+    public Class<?> getObjectType() {
+        return Map.class;
+    }
 
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
 
 }

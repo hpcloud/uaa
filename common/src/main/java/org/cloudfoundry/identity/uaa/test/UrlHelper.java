@@ -20,19 +20,19 @@ package org.cloudfoundry.identity.uaa.test;
  *
  */
 public interface UrlHelper {
-	
-	String getUrl(String path);
-	
-	String getBaseUrl();
-	
-	String getAccessTokenUri();
+    
+    String getUrl(String path);
+    
+    String getBaseUrl();
+    
+    String getAccessTokenUri();
 
-	String getAuthorizationUri();
-	
-	String getClientsUri();
+    String getAuthorizationUri();
+    
+    String getClientsUri();
 
-	String getUsersUri();
+    String getUsersUri();
 
-	String getUserUri();
+    String getUserUri();
 
 }

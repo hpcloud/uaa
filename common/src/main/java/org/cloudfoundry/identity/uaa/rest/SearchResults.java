@@ -20,39 +20,39 @@ import java.util.Collection;
  *
  */
 public class SearchResults<T> {
-	
-	private final Collection<T> resources;
-	private final int startIndex;
-	private final int itemsPerPage;
-	private final int totalResults;
-	private final Collection<String> schemas;
+    
+    private final Collection<T> resources;
+    private final int startIndex;
+    private final int itemsPerPage;
+    private final int totalResults;
+    private final Collection<String> schemas;
 
-	public SearchResults(Collection<String> schemas, Collection<T> resources, int startIndex, int itemsPerPage, int totalResults) {
-		this.schemas = new ArrayList<String>(schemas);
-		this.resources = new ArrayList<T>(resources);
-		this.startIndex = startIndex;
-		this.itemsPerPage = itemsPerPage;
-		this.totalResults = totalResults;
-	}
-	
-	public Collection<String> getSchemas() {
-		return schemas;
-	}
-	
-	public int getStartIndex() {
-		return startIndex;
-	}
+    public SearchResults(Collection<String> schemas, Collection<T> resources, int startIndex, int itemsPerPage, int totalResults) {
+        this.schemas = new ArrayList<String>(schemas);
+        this.resources = new ArrayList<T>(resources);
+        this.startIndex = startIndex;
+        this.itemsPerPage = itemsPerPage;
+        this.totalResults = totalResults;
+    }
+    
+    public Collection<String> getSchemas() {
+        return schemas;
+    }
+    
+    public int getStartIndex() {
+        return startIndex;
+    }
 
-	public int getItemsPerPage() {
-		return itemsPerPage;
-	}
+    public int getItemsPerPage() {
+        return itemsPerPage;
+    }
 
-	public int getTotalResults() {
-		return totalResults;
-	}
+    public int getTotalResults() {
+        return totalResults;
+    }
 
-	public Collection<T> getResources() {
-		return resources;
-	}
+    public Collection<T> getResources() {
+        return resources;
+    }
 
 }

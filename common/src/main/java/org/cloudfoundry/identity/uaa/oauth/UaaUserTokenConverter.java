@@ -29,16 +29,16 @@ import org.springframework.security.core.Authentication;
  */
 public class UaaUserTokenConverter implements UserTokenConverter {
 
-	@Override
-	public Map<String, ?> convertUserAuthentication(Authentication authentication) {
-		Map<String, Object> response = new LinkedHashMap<String, Object>();
-		if (authentication.getPrincipal() instanceof UaaPrincipal) {
-			UaaPrincipal principal = (UaaPrincipal) authentication.getPrincipal();
-			response.put(USER_ID, principal.getId());
-			response.put(USER_NAME, principal.getName());
-			response.put(EMAIL, principal.getEmail());
-		}
-		return response;
-	}
+    @Override
+    public Map<String, ?> convertUserAuthentication(Authentication authentication) {
+        Map<String, Object> response = new LinkedHashMap<String, Object>();
+        if (authentication.getPrincipal() instanceof UaaPrincipal) {
+            UaaPrincipal principal = (UaaPrincipal) authentication.getPrincipal();
+            response.put(USER_ID, principal.getId());
+            response.put(USER_NAME, principal.getName());
+            response.put(EMAIL, principal.getEmail());
+        }
+        return response;
+    }
 
 }

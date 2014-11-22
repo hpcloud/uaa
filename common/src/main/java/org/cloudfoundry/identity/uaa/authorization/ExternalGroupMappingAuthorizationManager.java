@@ -4,6 +4,6 @@ import java.util.Set;
 
 public interface ExternalGroupMappingAuthorizationManager {
 
-	public Set<String> findScopesFromAuthorities(String authorities);
+    public Set<String> findScopesFromAuthorities(String authorities);
 
 }

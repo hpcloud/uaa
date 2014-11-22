@@ -20,37 +20,37 @@ package org.cloudfoundry.identity.uaa.audit;
  */
 public enum AuditEventType {
 
-	// Do not change the code values, as these are used in the database.
-	UserAuthenticationSuccess (0),
-	UserAuthenticationFailure (1),
-	UserNotFound (2),
-	PasswordChangeSuccess (3),
-	PrincipalAuthenticationSuccess (4),
-	PrincipalAuthenticationFailure (5),
-	PrincipalNotFound (6),
-	PasswordChangeFailure (7),
-	SecretChangeSuccess (8),
-	SecretChangeFailure (9),
-	ClientCreateSuccess (10),
-	ClientUpdateSuccess (11),
-	ClientDeleteSuccess (12);
+    // Do not change the code values, as these are used in the database.
+    UserAuthenticationSuccess (0),
+    UserAuthenticationFailure (1),
+    UserNotFound (2),
+    PasswordChangeSuccess (3),
+    PrincipalAuthenticationSuccess (4),
+    PrincipalAuthenticationFailure (5),
+    PrincipalNotFound (6),
+    PasswordChangeFailure (7),
+    SecretChangeSuccess (8),
+    SecretChangeFailure (9),
+    ClientCreateSuccess (10),
+    ClientUpdateSuccess (11),
+    ClientDeleteSuccess (12);
 
-	private final int code;
+    private final int code;
 
-	private AuditEventType(int code) {
-		this.code = code;
-	}
+    private AuditEventType(int code) {
+        this.code = code;
+    }
 
-	public static AuditEventType fromCode(int code) {
-		for(AuditEventType a : AuditEventType.values()) {
-			if (a.getCode() == code) {
-				return a;
-			}
-		}
-		throw new IllegalArgumentException("No event type with code " + code + " exists");
-	}
+    public static AuditEventType fromCode(int code) {
+        for(AuditEventType a : AuditEventType.values()) {
+            if (a.getCode() == code) {
+                return a;
+            }
+        }
+        throw new IllegalArgumentException("No event type with code " + code + " exists");
+    }
 
-	public int getCode() {
-		return code;
-	}
+    public int getCode() {
+        return code;
+    }
 }

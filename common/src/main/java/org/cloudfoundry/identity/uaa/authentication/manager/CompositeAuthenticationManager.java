@@ -20,19 +20,19 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 public class CompositeAuthenticationManager implements AuthenticationManager {
 
-	@Override
-	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-		Authentication a = SecurityContextHolder.getContext().getAuthentication();
-		OAuth2Authentication oauth2Authentication = null;
-		if (a instanceof OAuth2Authentication) {
-			oauth2Authentication = (OAuth2Authentication) a;
-		}
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        OAuth2Authentication oauth2Authentication = null;
+        if (a instanceof OAuth2Authentication) {
+            oauth2Authentication = (OAuth2Authentication) a;
+        }
 
-		if (oauth2Authentication != null) {
-			return oauth2Authentication.getUserAuthentication();
-		}
-		else {
-			return authentication;
-		}
-	}
+        if (oauth2Authentication != null) {
+            return oauth2Authentication.getUserAuthentication();
+        }
+        else {
+            return authentication;
+        }
+    }
 }

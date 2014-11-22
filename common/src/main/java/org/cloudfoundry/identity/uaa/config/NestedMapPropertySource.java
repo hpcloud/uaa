@@ -34,96 +34,96 @@ import org.springframework.util.StringUtils;
  */
 public class NestedMapPropertySource extends MapPropertySource {
 
-	private Map<String, Object> cache = new HashMap<String, Object>();
+    private Map<String, Object> cache = new HashMap<String, Object>();
 
-	private boolean initialized = false;
+    private boolean initialized = false;
 
-	/**
-	 * @param name the name of this property source
-	 * @param source the source map
-	 */
-	@SuppressWarnings("unchecked")
-	public NestedMapPropertySource(String name, Map<String, ?> source) {
-		super(name, (Map<String, Object>) source);
-	}
+    /**
+     * @param name the name of this property source
+     * @param source the source map
+     */
+    @SuppressWarnings("unchecked")
+    public NestedMapPropertySource(String name, Map<String, ?> source) {
+        super(name, (Map<String, Object>) source);
+    }
 
-	@Override
-	public Object getProperty(String name) {
-		Object value = this.source.get(name);
-		if (value != null) {
-			return value;
-		}
-		populateCache();
-		value = this.cache.get(name);
-		return value;
-	}
+    @Override
+    public Object getProperty(String name) {
+        Object value = this.source.get(name);
+        if (value != null) {
+            return value;
+        }
+        populateCache();
+        value = this.cache.get(name);
+        return value;
+    }
 
-	@Override
-	public String[] getPropertyNames() {
-		populateCache();
-		return this.cache.keySet().toArray(EMPTY_NAMES_ARRAY);
-	}
+    @Override
+    public String[] getPropertyNames() {
+        populateCache();
+        return this.cache.keySet().toArray(EMPTY_NAMES_ARRAY);
+    }
 
-	private void populateCache() {
-		if (initialized) {
-			return;
-		}
-		appendCache(this.cache, new HashSet<String>(), this.source, null);
-		initialized = true;
-	}
+    private void populateCache() {
+        if (initialized) {
+            return;
+        }
+        appendCache(this.cache, new HashSet<String>(), this.source, null);
+        initialized = true;
+    }
 
-	private void appendCache(Map<String, Object> output, Set<String> seen, Map<String, Object> input, String path) {
+    private void appendCache(Map<String, Object> output, Set<String> seen, Map<String, Object> input, String path) {
 
-		synchronized (this.cache) {
+        synchronized (this.cache) {
 
-			seen.add(ObjectUtils.getIdentityHexString(input));
+            seen.add(ObjectUtils.getIdentityHexString(input));
 
-			for (Entry<String, Object> entry : input.entrySet()) {
-				String key = entry.getKey();
-				if (StringUtils.hasText(path)) {
-					if (key.startsWith("[")) {
-						key = path + key;
-					}
-					else {
-						key = path + "." + key;
-					}
-				}
-				Object value = entry.getValue();
-				if (value instanceof String) {
-					output.put(key, value);
-				}
-				else if (value instanceof Map) {
-					// Need a compound key
-					@SuppressWarnings("unchecked")
-					Map<String, Object> map = (Map<String, Object>) value;
-					output.put(key, map);
-					if (!seen.contains(ObjectUtils.getIdentityHexString(map))) {
-						appendCache(output, seen, map, key);
-					}
-				}
-				else if (value instanceof Collection) {
-					// Need a compound key
-					@SuppressWarnings("unchecked")
-					Collection<Object> collection = (Collection<Object>) value;
-					output.put(key, collection);
-					int count = 0;
-					for (Object object : collection) {
-						String index = "[" + (count++) + "]";
-						if (!seen.contains(ObjectUtils.getIdentityHexString(object))) {
-							appendCache(output, seen, Collections.singletonMap(index, object), key);
-						}
-						else {
-							output.put(key + index, object);
-						}
-					}
-				}
-				else {
-					output.put(key, value);
-				}
-			}
+            for (Entry<String, Object> entry : input.entrySet()) {
+                String key = entry.getKey();
+                if (StringUtils.hasText(path)) {
+                    if (key.startsWith("[")) {
+                        key = path + key;
+                    }
+                    else {
+                        key = path + "." + key;
+                    }
+                }
+                Object value = entry.getValue();
+                if (value instanceof String) {
+                    output.put(key, value);
+                }
+                else if (value instanceof Map) {
+                    // Need a compound key
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> map = (Map<String, Object>) value;
+                    output.put(key, map);
+                    if (!seen.contains(ObjectUtils.getIdentityHexString(map))) {
+                        appendCache(output, seen, map, key);
+                    }
+                }
+                else if (value instanceof Collection) {
+                    // Need a compound key
+                    @SuppressWarnings("unchecked")
+                    Collection<Object> collection = (Collection<Object>) value;
+                    output.put(key, collection);
+                    int count = 0;
+                    for (Object object : collection) {
+                        String index = "[" + (count++) + "]";
+                        if (!seen.contains(ObjectUtils.getIdentityHexString(object))) {
+                            appendCache(output, seen, Collections.singletonMap(index, object), key);
+                        }
+                        else {
+                            output.put(key + index, object);
+                        }
+                    }
+                }
+                else {
+                    output.put(key, value);
+                }
+            }
 
-		}
+        }
 
-	}
+    }
 
 }

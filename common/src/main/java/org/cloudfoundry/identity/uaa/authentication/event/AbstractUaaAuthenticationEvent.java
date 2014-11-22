@@ -21,20 +21,20 @@ import org.springframework.security.core.Authentication;
  */
 abstract class AbstractUaaAuthenticationEvent extends AbstractUaaEvent {
 
-	AbstractUaaAuthenticationEvent(Authentication authentication) {
-		super(authentication);
-	}
+    AbstractUaaAuthenticationEvent(Authentication authentication) {
+        super(authentication);
+    }
 
-	Authentication getAuthentication() {
-		return (Authentication)source;
-	}
-	
-	protected String getOrigin(UaaAuthenticationDetails details) {
-		return details == null ? "unknown" : details.toString();
-	}
+    Authentication getAuthentication() {
+        return (Authentication)source;
+    }
+    
+    protected String getOrigin(UaaAuthenticationDetails details) {
+        return details == null ? "unknown" : details.toString();
+    }
 
-	UaaAuthenticationDetails getAuthenticationDetails() {
-		return (UaaAuthenticationDetails) getAuthentication().getDetails();
-	}
+    UaaAuthenticationDetails getAuthenticationDetails() {
+        return (UaaAuthenticationDetails) getAuthentication().getDetails();
+    }
 
 }

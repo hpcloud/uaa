@@ -19,8 +19,8 @@ import org.springframework.security.core.Authentication;
  * @author Luke Taylor
  */
 public class PermitAllAccountLoginPolicy implements AccountLoginPolicy {
-	@Override
-	public boolean isAllowed(UaaUser user, Authentication a) {
-		return true;
-	}
+    @Override
+    public boolean isAllowed(UaaUser user, Authentication a) {
+        return true;
+    }
 }

@@ -23,20 +23,20 @@ import java.util.List;
  */
 public interface UaaAuditService {
 
-	/**
-	 * Find audit events relating to the specified principal since the time provided.
-	 * 
-	 * @param principal the principal name to search for
-	 * @param after epoch in milliseconds
-	 * @return audit events relating to the principal
-	 */
-	List<AuditEvent> find(String principal, long after);
+    /**
+     * Find audit events relating to the specified principal since the time provided.
+     * 
+     * @param principal the principal name to search for
+     * @param after epoch in milliseconds
+     * @return audit events relating to the principal
+     */
+    List<AuditEvent> find(String principal, long after);
 
-	/**
-	 * Log an event.
-	 * 
-	 * @param auditEvent the audit event to log
-	 */
-	void log(AuditEvent auditEvent);
+    /**
+     * Log an event.
+     * 
+     * @param auditEvent the audit event to log
+     */
+    void log(AuditEvent auditEvent);
 
 }

@@ -25,26 +25,26 @@ import org.springframework.util.Assert;
  */
 public class OAuth2AccessTokenSource implements InitializingBean, PreAuthenticatedPrincipalSource<String> {
 
-	private OAuth2RestOperations restTemplate;
+    private OAuth2RestOperations restTemplate;
 
-	/**
-	 * A rest template to be used to contact the remote user info endpoint. Normally an instance of
-	 * {@link OAuth2RestTemplate}.
-	 * 
-	 * @param restTemplate a rest template
-	 */
-	public void setRestTemplate(OAuth2RestOperations restTemplate) {
-		this.restTemplate = restTemplate;
-	}
+    /**
+     * A rest template to be used to contact the remote user info endpoint. Normally an instance of
+     * {@link OAuth2RestTemplate}.
+     * 
+     * @param restTemplate a rest template
+     */
+    public void setRestTemplate(OAuth2RestOperations restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
-	@Override
-	public void afterPropertiesSet() {
-		Assert.state(restTemplate != null, "RestTemplate URL must be provided");
-	}
+    @Override
+    public void afterPropertiesSet() {
+        Assert.state(restTemplate != null, "RestTemplate URL must be provided");
+    }
 
-	@Override
-	public String getPrincipal() {
-		return restTemplate.getAccessToken().getValue();
-	}
+    @Override
+    public String getPrincipal() {
+        return restTemplate.getAccessToken().getValue();
+    }
 
 }

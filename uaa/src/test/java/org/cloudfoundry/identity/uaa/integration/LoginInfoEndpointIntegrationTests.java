@@ -32,51 +32,51 @@ import org.springframework.http.ResponseEntity;
  */
 public class LoginInfoEndpointIntegrationTests {
 
-	@Rule
-	public ServerRunning serverRunning = ServerRunning.isRunning();
+    @Rule
+    public ServerRunning serverRunning = ServerRunning.isRunning();
 
-	/**
-	 * tests a happy-day flow of the <code>/info</code> endpoint
-	 */
-	@Test
-	public void testHappyDay() throws Exception {
+    /**
+     * tests a happy-day flow of the <code>/info</code> endpoint
+     */
+    @Test
+    public void testHappyDay() throws Exception {
 
-		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.getForObject("/info", Map.class);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		@SuppressWarnings("unchecked")
-		List<Map<String, String[]>> prompts = (List<Map<String, String[]>>) response.getBody().get("prompts");
-		assertNotNull(prompts);
+        @SuppressWarnings("rawtypes")
+        ResponseEntity<Map> response = serverRunning.getForObject("/info", Map.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        @SuppressWarnings("unchecked")
+        List<Map<String, String[]>> prompts = (List<Map<String, String[]>>) response.getBody().get("prompts");
+        assertNotNull(prompts);
 
-	}
+    }
 
-	/**
-	 * tests a happy-day flow of the <code>/login</code> endpoint
-	 */
-	@Test
-	public void testHappyDayHtml() throws Exception {
+    /**
+     * tests a happy-day flow of the <code>/login</code> endpoint
+     */
+    @Test
+    public void testHappyDayHtml() throws Exception {
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
 
-		HttpStatus status = HttpStatus.FOUND;
-		String location = "/login";
-		ResponseEntity<Void> response = null;
-		while (status == HttpStatus.FOUND) {
-			response = serverRunning.getForResponse(location, headers);
-			status = response.getStatusCode();
-			if (status == HttpStatus.FOUND) {
-				location = response.getHeaders().getLocation().toString();
-				System.err.println("Redirected to " + location);
-			}
-		}
+        HttpStatus status = HttpStatus.FOUND;
+        String location = "/login";
+        ResponseEntity<Void> response = null;
+        while (status == HttpStatus.FOUND) {
+            response = serverRunning.getForResponse(location, headers);
+            status = response.getStatusCode();
+            if (status == HttpStatus.FOUND) {
+                location = response.getHeaders().getLocation().toString();
+                System.err.println("Redirected to " + location);
+            }
+        }
 
-		ResponseEntity<String> finalResponse = serverRunning.getForString(location, headers);
-		String body = finalResponse.getBody().toString();
-		// System.err.println(body);
-		assertNotNull(body);
-		assertTrue("Wrong body: "+body, body.contains("<form id="));
+        ResponseEntity<String> finalResponse = serverRunning.getForString(location, headers);
+        String body = finalResponse.getBody().toString();
+        // System.err.println(body);
+        assertNotNull(body);
+        assertTrue("Wrong body: "+body, body.contains("<form id="));
 
-	}
+    }
 
 }

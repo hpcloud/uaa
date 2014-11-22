@@ -1,5 +1,5 @@
 #macro (sequence $name $value)CREATE TABLE ${name} (
-	ID BIGINT IDENTITY
+    ID BIGINT IDENTITY
 );
 #end
 #macro (notnull $name $type)ALTER COLUMN ${name} set NOT NULL#end

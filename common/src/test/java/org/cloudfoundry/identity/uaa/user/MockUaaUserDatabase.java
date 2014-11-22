@@ -20,25 +20,25 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Luke Taylor
  */
 public class MockUaaUserDatabase implements UaaUserDatabase {
-	UaaUser user;
+    UaaUser user;
 
-	public MockUaaUserDatabase(String id, String name, String email, String givenName, String familyName) {
-		user = new UaaUser(id, name, "", email, UaaAuthority.USER_AUTHORITIES, givenName, familyName,
-				new Date(), new Date());
-	}
+    public MockUaaUserDatabase(String id, String name, String email, String givenName, String familyName) {
+        user = new UaaUser(id, name, "", email, UaaAuthority.USER_AUTHORITIES, givenName, familyName,
+                new Date(), new Date());
+    }
 
-	public MockUaaUserDatabase(String id, String name, String email, String givenName, String familyName, Date createdAt, Date updatedAt) {
-		user = new UaaUser(id, name, "", email, UaaAuthority.USER_AUTHORITIES, givenName, familyName,
-				createdAt, updatedAt);
-	}
+    public MockUaaUserDatabase(String id, String name, String email, String givenName, String familyName, Date createdAt, Date updatedAt) {
+        user = new UaaUser(id, name, "", email, UaaAuthority.USER_AUTHORITIES, givenName, familyName,
+                createdAt, updatedAt);
+    }
 
-	@Override
-	public UaaUser retrieveUserByName(String username) throws UsernameNotFoundException {
-		if (user.getUsername().equals(username)) {
-			return user;
-		}
-		else {
-			throw new UsernameNotFoundException(username);
-		}
-	}
+    @Override
+    public UaaUser retrieveUserByName(String username) throws UsernameNotFoundException {
+        if (user.getUsername().equals(username)) {
+            return user;
+        }
+        else {
+            throw new UsernameNotFoundException(username);
+        }
+    }
 }

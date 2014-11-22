@@ -23,19 +23,19 @@ import org.junit.Test;
  */
 public class PromptTests {
 
-	@Test
-	public void testSerialization() throws Exception {
-		Prompt prompt = new Prompt("username", "text", "Username");
-		String[] values = prompt.getDetails();
-		assertEquals("text", values[0]);
-		assertEquals("Username", values[1]);
-	}
+    @Test
+    public void testSerialization() throws Exception {
+        Prompt prompt = new Prompt("username", "text", "Username");
+        String[] values = prompt.getDetails();
+        assertEquals("text", values[0]);
+        assertEquals("Username", values[1]);
+    }
 
-	@Test
-	public void testDeserialization() throws Exception {
-		Prompt prompt = new Prompt("username", "text", "Username");
-		Prompt value = Prompt.valueOf("username:[text,Username]");
-		assertEquals(prompt, value);
-	}
+    @Test
+    public void testDeserialization() throws Exception {
+        Prompt prompt = new Prompt("username", "text", "Username");
+        Prompt value = Prompt.valueOf("username:[text,Username]");
+        assertEquals(prompt, value);
+    }
 
 }

@@ -32,29 +32,29 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class ClientInfoEndpoint implements InitializingBean {
 
-	private ClientDetailsService clientDetailsService;
+    private ClientDetailsService clientDetailsService;
 
-	/**
-	 * @param clientDetailsService the clientDetailsService to set
-	 */
-	public void setClientDetailsService(ClientDetailsService clientDetailsService) {
-		this.clientDetailsService = clientDetailsService;
-	}
+    /**
+     * @param clientDetailsService the clientDetailsService to set
+     */
+    public void setClientDetailsService(ClientDetailsService clientDetailsService) {
+        this.clientDetailsService = clientDetailsService;
+    }
 
-	public void afterPropertiesSet() throws Exception {
-		Assert.notNull(clientDetailsService, "clientDetailsService must be set");
-	}
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull(clientDetailsService, "clientDetailsService must be set");
+    }
 
-	@RequestMapping(value = "/clientinfo")
-	@ResponseBody
-	public ClientDetails clientinfo(Principal principal) {
+    @RequestMapping(value = "/clientinfo")
+    @ResponseBody
+    public ClientDetails clientinfo(Principal principal) {
 
-		String clientId = principal.getName();
-		BaseClientDetails client = new BaseClientDetails(clientDetailsService.loadClientByClientId(clientId));
-		client.setClientSecret(null);
-		client.setAdditionalInformation(Collections.<String, Object> emptyMap());
-		return client;
+        String clientId = principal.getName();
+        BaseClientDetails client = new BaseClientDetails(clientDetailsService.loadClientByClientId(clientId));
+        client.setClientSecret(null);
+        client.setAdditionalInformation(Collections.<String, Object> emptyMap());
+        return client;
 
-	}
+    }
 
 }

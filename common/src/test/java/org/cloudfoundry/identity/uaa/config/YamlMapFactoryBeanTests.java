@@ -31,50 +31,50 @@ import org.springframework.core.io.Resource;
  *
  */
 public class YamlMapFactoryBeanTests {
-	
-	private YamlMapFactoryBean factory = new YamlMapFactoryBean();
+    
+    private YamlMapFactoryBean factory = new YamlMapFactoryBean();
 
-	@Test
-	public void testSetIgnoreResourceNotFound() throws Exception {
-		factory.setResolutionMethod(YamlMapFactoryBean.ResolutionMethod.OVERRIDE_AND_IGNORE);
-		factory.setResources(new FileSystemResource[] {new FileSystemResource("non-exsitent-file.yml")});
-		assertEquals(0, factory.getObject().size());
-	}
+    @Test
+    public void testSetIgnoreResourceNotFound() throws Exception {
+        factory.setResolutionMethod(YamlMapFactoryBean.ResolutionMethod.OVERRIDE_AND_IGNORE);
+        factory.setResources(new FileSystemResource[] {new FileSystemResource("non-exsitent-file.yml")});
+        assertEquals(0, factory.getObject().size());
+    }
 
-	@Test(expected=IllegalStateException.class)
-	public void testSetBarfOnResourceNotFound() throws Exception {
-		factory.setResources(new FileSystemResource[] {new FileSystemResource("non-exsitent-file.yml")});
-		assertEquals(0, factory.getObject().size());
-	}
+    @Test(expected=IllegalStateException.class)
+    public void testSetBarfOnResourceNotFound() throws Exception {
+        factory.setResources(new FileSystemResource[] {new FileSystemResource("non-exsitent-file.yml")});
+        assertEquals(0, factory.getObject().size());
+    }
 
-	@Test
-	public void testGetObject() throws Exception {
-		factory.setResources(new ByteArrayResource[] {new ByteArrayResource("foo: bar".getBytes())});
-		assertEquals(1, factory.getObject().size());
-	}
+    @Test
+    public void testGetObject() throws Exception {
+        factory.setResources(new ByteArrayResource[] {new ByteArrayResource("foo: bar".getBytes())});
+        assertEquals(1, factory.getObject().size());
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testOverrideAndremoveDefaults() throws Exception {
-		factory.setResources(new ByteArrayResource[] {new ByteArrayResource("foo:\n  bar: spam".getBytes()), new ByteArrayResource("foo:\n  spam: bar".getBytes())});
-		assertEquals(1, factory.getObject().size());
-		assertEquals(2, ((Map<String, Object>) factory.getObject().get("foo")).size());
-	}
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testOverrideAndremoveDefaults() throws Exception {
+        factory.setResources(new ByteArrayResource[] {new ByteArrayResource("foo:\n  bar: spam".getBytes()), new ByteArrayResource("foo:\n  spam: bar".getBytes())});
+        assertEquals(1, factory.getObject().size());
+        assertEquals(2, ((Map<String, Object>) factory.getObject().get("foo")).size());
+    }
 
-	@Test
-	public void testFirstFound() throws Exception {
-		factory.setResolutionMethod(ResolutionMethod.FIRST_FOUND);
-		factory.setResources(new Resource[] {new AbstractResource() {
-			@Override
-			public String getDescription() {
-				return "non-existent";
-			}
-			@Override
-			public InputStream getInputStream() throws IOException {
-				throw new IOException("planned");
-			}
-		}, new ByteArrayResource("foo:\n  spam: bar".getBytes())});
-		assertEquals(1, factory.getObject().size());
-	}
+    @Test
+    public void testFirstFound() throws Exception {
+        factory.setResolutionMethod(ResolutionMethod.FIRST_FOUND);
+        factory.setResources(new Resource[] {new AbstractResource() {
+            @Override
+            public String getDescription() {
+                return "non-existent";
+            }
+            @Override
+            public InputStream getInputStream() throws IOException {
+                throw new IOException("planned");
+            }
+        }, new ByteArrayResource("foo:\n  spam: bar".getBytes())});
+        assertEquals(1, factory.getObject().size());
+    }
 
 }

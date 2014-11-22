@@ -40,109 +40,109 @@ import org.springframework.web.servlet.View;
  */
 public class ConvertingExceptionView implements View {
 
-	private static final Log logger = LogFactory.getLog(ConvertingExceptionView.class);
+    private static final Log logger = LogFactory.getLog(ConvertingExceptionView.class);
 
-	private ResponseEntity<? extends ExceptionReport> responseEntity;
+    private ResponseEntity<? extends ExceptionReport> responseEntity;
 
-	private final HttpMessageConverter<?>[] messageConverters;
+    private final HttpMessageConverter<?>[] messageConverters;
 
-	public ConvertingExceptionView(ResponseEntity<? extends ExceptionReport> responseEntity, HttpMessageConverter<?>[] messageConverters) {
-		this.responseEntity = responseEntity;
-		this.messageConverters = messageConverters;
-	}
+    public ConvertingExceptionView(ResponseEntity<? extends ExceptionReport> responseEntity, HttpMessageConverter<?>[] messageConverters) {
+        this.responseEntity = responseEntity;
+        this.messageConverters = messageConverters;
+    }
 
-	@Override
-	public String getContentType() {
-		return MediaType.ALL_VALUE;
-	}
+    @Override
+    public String getContentType() {
+        return MediaType.ALL_VALUE;
+    }
 
-	@Override
-	public void render(Map<String, ?> model, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		try {
-			HttpInputMessage inputMessage = createHttpInputMessage(request);
-			HttpOutputMessage outputMessage = createHttpOutputMessage(response);
-			handleHttpEntityResponse(responseEntity, inputMessage, outputMessage);
-		}
-		catch (Exception invocationEx) {
-			logger.error("Invoking request method resulted in exception", invocationEx);
-		}
-	}
+    @Override
+    public void render(Map<String, ?> model, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        try {
+            HttpInputMessage inputMessage = createHttpInputMessage(request);
+            HttpOutputMessage outputMessage = createHttpOutputMessage(response);
+            handleHttpEntityResponse(responseEntity, inputMessage, outputMessage);
+        }
+        catch (Exception invocationEx) {
+            logger.error("Invoking request method resulted in exception", invocationEx);
+        }
+    }
 
-	/**
-	 * Template method for creating a new HttpInputMessage instance.
-	 * <p>
-	 * The default implementation creates a standard {@link ServletServerHttpRequest}. This can be overridden for custom
-	 * {@code HttpInputMessage} implementations
-	 * @param servletRequest current HTTP request
-	 * @return the HttpInputMessage instance to use
-	 * @throws Exception in case of errors
-	 */
-	protected HttpInputMessage createHttpInputMessage(HttpServletRequest servletRequest) throws Exception {
-		return new ServletServerHttpRequest(servletRequest);
-	}
+    /**
+     * Template method for creating a new HttpInputMessage instance.
+     * <p>
+     * The default implementation creates a standard {@link ServletServerHttpRequest}. This can be overridden for custom
+     * {@code HttpInputMessage} implementations
+     * @param servletRequest current HTTP request
+     * @return the HttpInputMessage instance to use
+     * @throws Exception in case of errors
+     */
+    protected HttpInputMessage createHttpInputMessage(HttpServletRequest servletRequest) throws Exception {
+        return new ServletServerHttpRequest(servletRequest);
+    }
 
-	/**
-	 * Template method for creating a new HttpOuputMessage instance.
-	 * <p>
-	 * The default implementation creates a standard {@link ServletServerHttpResponse}. This can be overridden for
-	 * custom {@code HttpOutputMessage} implementations
-	 * @param servletResponse current HTTP response
-	 * @return the HttpInputMessage instance to use
-	 * @throws Exception in case of errors
-	 */
-	protected HttpOutputMessage createHttpOutputMessage(HttpServletResponse servletResponse) throws Exception {
-		return new ServletServerHttpResponse(servletResponse);
-	}
+    /**
+     * Template method for creating a new HttpOuputMessage instance.
+     * <p>
+     * The default implementation creates a standard {@link ServletServerHttpResponse}. This can be overridden for
+     * custom {@code HttpOutputMessage} implementations
+     * @param servletResponse current HTTP response
+     * @return the HttpInputMessage instance to use
+     * @throws Exception in case of errors
+     */
+    protected HttpOutputMessage createHttpOutputMessage(HttpServletResponse servletResponse) throws Exception {
+        return new ServletServerHttpResponse(servletResponse);
+    }
 
-	private void handleHttpEntityResponse(ResponseEntity<? extends ExceptionReport> responseEntity,
-			HttpInputMessage inputMessage, HttpOutputMessage outputMessage) throws Exception {
-		if (outputMessage instanceof ServerHttpResponse) {
-			((ServerHttpResponse) outputMessage).setStatusCode(responseEntity.getStatusCode());
-		}
-		if (responseEntity.getBody() != null) {
-			writeWithMessageConverters(responseEntity.getBody(), inputMessage, outputMessage);
-		}
-		else {
-			// flush headers
-			outputMessage.getBody();
-		}
-	}
+    private void handleHttpEntityResponse(ResponseEntity<? extends ExceptionReport> responseEntity,
+            HttpInputMessage inputMessage, HttpOutputMessage outputMessage) throws Exception {
+        if (outputMessage instanceof ServerHttpResponse) {
+            ((ServerHttpResponse) outputMessage).setStatusCode(responseEntity.getStatusCode());
+        }
+        if (responseEntity.getBody() != null) {
+            writeWithMessageConverters(responseEntity.getBody(), inputMessage, outputMessage);
+        }
+        else {
+            // flush headers
+            outputMessage.getBody();
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	private void writeWithMessageConverters(Object returnValue, HttpInputMessage inputMessage,
-			HttpOutputMessage outputMessage) throws IOException, HttpMediaTypeNotAcceptableException {
-		List<MediaType> acceptedMediaTypes = inputMessage.getHeaders().getAccept();
-		if (acceptedMediaTypes.isEmpty()) {
-			acceptedMediaTypes = Collections.singletonList(MediaType.ALL);
-		}
-		MediaType.sortByQualityValue(acceptedMediaTypes);
-		Class<?> returnValueType = returnValue.getClass();
-		List<MediaType> allSupportedMediaTypes = new ArrayList<MediaType>();
-		if (messageConverters != null) {
-			for (MediaType acceptedMediaType : acceptedMediaTypes) {
-				for (@SuppressWarnings("rawtypes")
-				HttpMessageConverter messageConverter : messageConverters) {
-					if (messageConverter.canWrite(returnValueType, acceptedMediaType)) {
-						messageConverter.write(returnValue, acceptedMediaType, outputMessage);
-						if (logger.isDebugEnabled()) {
-							MediaType contentType = outputMessage.getHeaders().getContentType();
-							if (contentType == null) {
-								contentType = acceptedMediaType;
-							}
-							logger.debug("Written [" + returnValue + "] as \"" + contentType + "\" using ["
-									+ messageConverter + "]");
-						}
-						// this.responseArgumentUsed = true;
-						return;
-					}
-				}
-			}
-			for (@SuppressWarnings("rawtypes")
-			HttpMessageConverter messageConverter : messageConverters) {
-				allSupportedMediaTypes.addAll(messageConverter.getSupportedMediaTypes());
-			}
-		}
-		throw new HttpMediaTypeNotAcceptableException(allSupportedMediaTypes);
-	}
+    @SuppressWarnings("unchecked")
+    private void writeWithMessageConverters(Object returnValue, HttpInputMessage inputMessage,
+            HttpOutputMessage outputMessage) throws IOException, HttpMediaTypeNotAcceptableException {
+        List<MediaType> acceptedMediaTypes = inputMessage.getHeaders().getAccept();
+        if (acceptedMediaTypes.isEmpty()) {
+            acceptedMediaTypes = Collections.singletonList(MediaType.ALL);
+        }
+        MediaType.sortByQualityValue(acceptedMediaTypes);
+        Class<?> returnValueType = returnValue.getClass();
+        List<MediaType> allSupportedMediaTypes = new ArrayList<MediaType>();
+        if (messageConverters != null) {
+            for (MediaType acceptedMediaType : acceptedMediaTypes) {
+                for (@SuppressWarnings("rawtypes")
+                HttpMessageConverter messageConverter : messageConverters) {
+                    if (messageConverter.canWrite(returnValueType, acceptedMediaType)) {
+                        messageConverter.write(returnValue, acceptedMediaType, outputMessage);
+                        if (logger.isDebugEnabled()) {
+                            MediaType contentType = outputMessage.getHeaders().getContentType();
+                            if (contentType == null) {
+                                contentType = acceptedMediaType;
+                            }
+                            logger.debug("Written [" + returnValue + "] as \"" + contentType + "\" using ["
+                                    + messageConverter + "]");
+                        }
+                        // this.responseArgumentUsed = true;
+                        return;
+                    }
+                }
+            }
+            for (@SuppressWarnings("rawtypes")
+            HttpMessageConverter messageConverter : messageConverters) {
+                allSupportedMediaTypes.addAll(messageConverter.getSupportedMediaTypes());
+            }
+        }
+        throw new HttpMediaTypeNotAcceptableException(allSupportedMediaTypes);
+    }
 
 }

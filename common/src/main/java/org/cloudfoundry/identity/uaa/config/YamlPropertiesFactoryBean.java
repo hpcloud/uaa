@@ -64,36 +64,36 @@ import org.springframework.beans.factory.FactoryBean;
  */
 public class YamlPropertiesFactoryBean extends YamlProcessor implements FactoryBean<Properties> {
 
-	private Properties instance;
+    private Properties instance;
 
-	@Override
-	public Properties getObject() {
-		if (instance==null) {
-			instance  = doGetObject();
-		}
-		return instance;
-	}
+    @Override
+    public Properties getObject() {
+        if (instance==null) {
+            instance  = doGetObject();
+        }
+        return instance;
+    }
 
-	private Properties doGetObject() {
-		final Properties result = new Properties();
-		MatchCallback callback = new MatchCallback() {
-			@Override
-			public void process(Properties properties, Map<String, Object> map) {
-				result.putAll(properties);
-			}
-		};
-		process(callback);
-		return result;
-	}
+    private Properties doGetObject() {
+        final Properties result = new Properties();
+        MatchCallback callback = new MatchCallback() {
+            @Override
+            public void process(Properties properties, Map<String, Object> map) {
+                result.putAll(properties);
+            }
+        };
+        process(callback);
+        return result;
+    }
 
-	@Override
-	public Class<?> getObjectType() {
-		return Properties.class;
-	}
+    @Override
+    public Class<?> getObjectType() {
+        return Properties.class;
+    }
 
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
 
 }

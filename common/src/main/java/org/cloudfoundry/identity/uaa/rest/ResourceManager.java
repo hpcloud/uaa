@@ -4,14 +4,14 @@ import java.util.List;
 
 public interface ResourceManager<T> {
 
-	List<T> retrieveAll();
+    List<T> retrieveAll();
 
-	T retrieve (String id);
+    T retrieve (String id);
 
-	T create (T resource);
+    T create (T resource);
 
-	T update (String id, T resource);
+    T update (String id, T resource);
 
-	T delete (String id, int version);
+    T delete (String id, int version);
 
 }

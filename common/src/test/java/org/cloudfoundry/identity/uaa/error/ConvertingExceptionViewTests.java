@@ -32,29 +32,29 @@ import org.springframework.mock.web.MockHttpServletResponse;
  */
 public class ConvertingExceptionViewTests {
 
-	private ConvertingExceptionView view;
+    private ConvertingExceptionView view;
 
-	private HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[] { new StringHttpMessageConverter() };
+    private HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[] { new StringHttpMessageConverter() };
 
-	private MockHttpServletRequest request = new MockHttpServletRequest();
+    private MockHttpServletRequest request = new MockHttpServletRequest();
 
-	private MockHttpServletResponse response = new MockHttpServletResponse();
+    private MockHttpServletResponse response = new MockHttpServletResponse();
 
-	@Test
-	public void testGetContentType() throws Exception {
-		RuntimeException e = new RuntimeException("Unexpected error");
-		view = new ConvertingExceptionView(new ResponseEntity<ExceptionReport>(new ExceptionReport(e),
-				HttpStatus.INTERNAL_SERVER_ERROR), messageConverters);
-		assertEquals("*/*", view.getContentType());
-	}
+    @Test
+    public void testGetContentType() throws Exception {
+        RuntimeException e = new RuntimeException("Unexpected error");
+        view = new ConvertingExceptionView(new ResponseEntity<ExceptionReport>(new ExceptionReport(e),
+                HttpStatus.INTERNAL_SERVER_ERROR), messageConverters);
+        assertEquals("*/*", view.getContentType());
+    }
 
-	@Test
-	public void testRender() throws Exception {
-		RuntimeException e = new RuntimeException("Unexpected error");
-		view = new ConvertingExceptionView(new ResponseEntity<ExceptionReport>(new ExceptionReport(e),
-				HttpStatus.INTERNAL_SERVER_ERROR), messageConverters);
-		view.render(new HashMap<String, Object>(), request, response);
-		assertNotNull(response.getContentAsString());
-	}
+    @Test
+    public void testRender() throws Exception {
+        RuntimeException e = new RuntimeException("Unexpected error");
+        view = new ConvertingExceptionView(new ResponseEntity<ExceptionReport>(new ExceptionReport(e),
+                HttpStatus.INTERNAL_SERVER_ERROR), messageConverters);
+        view.render(new HashMap<String, Object>(), request, response);
+        assertNotNull(response.getContentAsString());
+    }
 
 }

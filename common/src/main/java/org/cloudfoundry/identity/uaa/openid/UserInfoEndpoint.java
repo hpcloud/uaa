@@ -42,52 +42,52 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class UserInfoEndpoint implements InitializingBean {
 
-	private UaaUserDatabase userDatabase;
+    private UaaUserDatabase userDatabase;
 
-	public void setUserDatabase(UaaUserDatabase userDatabase) {
-		this.userDatabase = userDatabase;
-	}
+    public void setUserDatabase(UaaUserDatabase userDatabase) {
+        this.userDatabase = userDatabase;
+    }
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		Assert.state(userDatabase != null, "A user database must be provided");
-	}
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.state(userDatabase != null, "A user database must be provided");
+    }
 
-	@RequestMapping(value = "/userinfo")
-	@ResponseBody
-	public Map<String, String> loginInfo(Principal principal) {
-		OAuth2Authentication authentication = (OAuth2Authentication) principal;
-		UaaPrincipal uaaPrincipal = extractUaaPrincipal(authentication);
-		return getResponse(uaaPrincipal);
-	}
+    @RequestMapping(value = "/userinfo")
+    @ResponseBody
+    public Map<String, String> loginInfo(Principal principal) {
+        OAuth2Authentication authentication = (OAuth2Authentication) principal;
+        UaaPrincipal uaaPrincipal = extractUaaPrincipal(authentication);
+        return getResponse(uaaPrincipal);
+    }
 
-	protected UaaPrincipal extractUaaPrincipal(OAuth2Authentication authentication) {
-		Object object = authentication.getUserAuthentication().getPrincipal();
-		if (object instanceof UaaPrincipal) {
-			return (UaaPrincipal) object;
-		}
-		throw new IllegalStateException("User authentication could not be converted to UaaPrincipal");
-	}
+    protected UaaPrincipal extractUaaPrincipal(OAuth2Authentication authentication) {
+        Object object = authentication.getUserAuthentication().getPrincipal();
+        if (object instanceof UaaPrincipal) {
+            return (UaaPrincipal) object;
+        }
+        throw new IllegalStateException("User authentication could not be converted to UaaPrincipal");
+    }
 
-	protected Map<String, String> getResponse(UaaPrincipal principal) {
-		UaaUser user = userDatabase.retrieveUserByName(principal.getName());
-		Map<String, String> response = new LinkedHashMap<String, String>() {
-			@Override
-			public String put(String key, String value) {
-				if (StringUtils.hasText(value)) {
-					return super.put(key, value);
-				}
-				return null;
-			}
-		};
-		response.put(USER_ID, user.getId());
-		response.put(USER_NAME, user.getUsername());
-		response.put(GIVEN_NAME, user.getGivenName());
-		response.put(FAMILY_NAME, user.getFamilyName());
-		response.put(NAME, (user.getGivenName() != null ? user.getGivenName() : "")
-				+ (user.getFamilyName() != null ? " " + user.getFamilyName() : ""));
-		response.put(EMAIL, user.getEmail());
-		// TODO: other attributes
-		return response;
-	}
+    protected Map<String, String> getResponse(UaaPrincipal principal) {
+        UaaUser user = userDatabase.retrieveUserByName(principal.getName());
+        Map<String, String> response = new LinkedHashMap<String, String>() {
+            @Override
+            public String put(String key, String value) {
+                if (StringUtils.hasText(value)) {
+                    return super.put(key, value);
+                }
+                return null;
+            }
+        };
+        response.put(USER_ID, user.getId());
+        response.put(USER_NAME, user.getUsername());
+        response.put(GIVEN_NAME, user.getGivenName());
+        response.put(FAMILY_NAME, user.getFamilyName());
+        response.put(NAME, (user.getGivenName() != null ? user.getGivenName() : "")
+                + (user.getFamilyName() != null ? " " + user.getFamilyName() : ""));
+        response.put(EMAIL, user.getEmail());
+        // TODO: other attributes
+        return response;
+    }
 }

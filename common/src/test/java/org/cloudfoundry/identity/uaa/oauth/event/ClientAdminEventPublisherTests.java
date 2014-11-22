@@ -42,68 +42,68 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
  */
 public class ClientAdminEventPublisherTests {
 
-	private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
+    private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
 
-	private ClientAdminEventPublisher subject = new ClientAdminEventPublisher(clientDetailsService);
+    private ClientAdminEventPublisher subject = new ClientAdminEventPublisher(clientDetailsService);
 
-	private ApplicationEventPublisher publisher = Mockito.mock(ApplicationEventPublisher.class);
+    private ApplicationEventPublisher publisher = Mockito.mock(ApplicationEventPublisher.class);
 
-	@Before
-	public void init() {
-		subject.setApplicationEventPublisher(publisher);
-		Authentication authentication = new OAuth2Authentication(new DefaultAuthorizationRequest("client",
-				Arrays.asList("read")), UaaAuthenticationTestFactory.getAuthentication("ID", "joe", "joe@test.org"));
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-	}
+    @Before
+    public void init() {
+        subject.setApplicationEventPublisher(publisher);
+        Authentication authentication = new OAuth2Authentication(new DefaultAuthorizationRequest("client",
+                Arrays.asList("read")), UaaAuthenticationTestFactory.getAuthentication("ID", "joe", "joe@test.org"));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
 
-	@After
-	public void destroy() {
-		SecurityContextHolder.clearContext();
-	}
+    @After
+    public void destroy() {
+        SecurityContextHolder.clearContext();
+    }
 
-	@Test
-	public void testCreate() {
-		BaseClientDetails client = new BaseClientDetails("foo", null, null, "client_credentials", "none");
-		subject.create(client);
-		Mockito.verify(publisher).publishEvent(Mockito.isA(ClientCreateEvent.class));
-	}
+    @Test
+    public void testCreate() {
+        BaseClientDetails client = new BaseClientDetails("foo", null, null, "client_credentials", "none");
+        subject.create(client);
+        Mockito.verify(publisher).publishEvent(Mockito.isA(ClientCreateEvent.class));
+    }
 
-	@Test
-	public void testUpdate() {
-		BaseClientDetails client = new BaseClientDetails("foo", null, null, "client_credentials", "none");
-		subject.update(client);
-		Mockito.verify(publisher).publishEvent(Mockito.isA(ClientUpdateEvent.class));
-	}
+    @Test
+    public void testUpdate() {
+        BaseClientDetails client = new BaseClientDetails("foo", null, null, "client_credentials", "none");
+        subject.update(client);
+        Mockito.verify(publisher).publishEvent(Mockito.isA(ClientUpdateEvent.class));
+    }
 
-	@Test
-	public void testDelete() throws Throwable {
-		BaseClientDetails client = new BaseClientDetails("foo", null, null, "client_credentials", "none");
-		ProceedingJoinPoint jp = Mockito.mock(ProceedingJoinPoint.class);
-		Mockito.when(jp.proceed()).thenReturn(client);
-		subject.delete(jp, "foo");
-		Mockito.verify(publisher).publishEvent(Mockito.isA(ClientDeleteEvent.class));
-	}
+    @Test
+    public void testDelete() throws Throwable {
+        BaseClientDetails client = new BaseClientDetails("foo", null, null, "client_credentials", "none");
+        ProceedingJoinPoint jp = Mockito.mock(ProceedingJoinPoint.class);
+        Mockito.when(jp.proceed()).thenReturn(client);
+        subject.delete(jp, "foo");
+        Mockito.verify(publisher).publishEvent(Mockito.isA(ClientDeleteEvent.class));
+    }
 
-	@Test
-	public void testSecretChange() {
-		Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenReturn(
-				new BaseClientDetails("foo", null, null, "client_credentials", "none"));
-		subject.secretChange("foo");
-		Mockito.verify(publisher).publishEvent(Mockito.isA(SecretChangeEvent.class));
-	}
+    @Test
+    public void testSecretChange() {
+        Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenReturn(
+                new BaseClientDetails("foo", null, null, "client_credentials", "none"));
+        subject.secretChange("foo");
+        Mockito.verify(publisher).publishEvent(Mockito.isA(SecretChangeEvent.class));
+    }
 
-	@Test
-	public void testSecretFailure() {
-		Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenReturn(
-				new BaseClientDetails("foo", null, null, "client_credentials", "none"));
-		subject.secretFailure("foo", new RuntimeException("planned"));
-		Mockito.verify(publisher).publishEvent(Mockito.isA(SecretFailureEvent.class));
-	}
+    @Test
+    public void testSecretFailure() {
+        Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenReturn(
+                new BaseClientDetails("foo", null, null, "client_credentials", "none"));
+        subject.secretFailure("foo", new RuntimeException("planned"));
+        Mockito.verify(publisher).publishEvent(Mockito.isA(SecretFailureEvent.class));
+    }
 
-	@Test
-	public void testSecretFailureMissingClient() {
-		Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenThrow(new InvalidClientException("Not found"));
-		subject.secretFailure("foo", new RuntimeException("planned"));
-		Mockito.verify(publisher).publishEvent(Mockito.isA(SecretFailureEvent.class));
-	}
+    @Test
+    public void testSecretFailureMissingClient() {
+        Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenThrow(new InvalidClientException("Not found"));
+        subject.secretFailure("foo", new RuntimeException("planned"));
+        Mockito.verify(publisher).publishEvent(Mockito.isA(SecretFailureEvent.class));
+    }
 }

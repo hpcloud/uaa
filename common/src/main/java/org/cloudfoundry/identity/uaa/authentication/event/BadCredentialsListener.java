@@ -25,26 +25,26 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Dave Syer
  */
 public class BadCredentialsListener implements ApplicationListener<AuthenticationFailureBadCredentialsEvent>,
-		ApplicationEventPublisherAware {
+        ApplicationEventPublisherAware {
 
-	private ApplicationEventPublisher publisher;
+    private ApplicationEventPublisher publisher;
 
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
-		this.publisher = publisher;
-	}
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+        this.publisher = publisher;
+    }
 
-	@Override
-	public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {
-		AuthenticationFailureBadCredentialsEvent bce = (AuthenticationFailureBadCredentialsEvent) event;
-		String principal = bce.getAuthentication().getName();
-		UaaAuthenticationDetails details = (UaaAuthenticationDetails) bce.getAuthentication().getDetails();
-		if (bce.getException() instanceof UsernameNotFoundException) {
-			publisher.publishEvent(new PrincipalNotFoundEvent(principal, details));
-		}
-		else {
-			publisher.publishEvent(new PrincipalAuthenticationFailureEvent(principal, details));
-		}
-	}
+    @Override
+    public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {
+        AuthenticationFailureBadCredentialsEvent bce = (AuthenticationFailureBadCredentialsEvent) event;
+        String principal = bce.getAuthentication().getName();
+        UaaAuthenticationDetails details = (UaaAuthenticationDetails) bce.getAuthentication().getDetails();
+        if (bce.getException() instanceof UsernameNotFoundException) {
+            publisher.publishEvent(new PrincipalNotFoundEvent(principal, details));
+        }
+        else {
+            publisher.publishEvent(new PrincipalAuthenticationFailureEvent(principal, details));
+        }
+    }
 
 }

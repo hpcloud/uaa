@@ -24,20 +24,20 @@ import org.springframework.security.web.util.RequestMatcher;
  * @author Luke Taylor
  */
 public class DelegatingRequestMatcher implements RequestMatcher {
-	private final List<RequestMatcher> matchers;
+    private final List<RequestMatcher> matchers;
 
-	public DelegatingRequestMatcher(List<RequestMatcher> matchers) {
-		this.matchers = new ArrayList<RequestMatcher>(matchers);
-	}
+    public DelegatingRequestMatcher(List<RequestMatcher> matchers) {
+        this.matchers = new ArrayList<RequestMatcher>(matchers);
+    }
 
-	@Override
-	public boolean matches(HttpServletRequest request) {
-		for (RequestMatcher m: matchers) {
-			if (m.matches(request)) {
-				return true;
-			}
-		}
+    @Override
+    public boolean matches(HttpServletRequest request) {
+        for (RequestMatcher m: matchers) {
+            if (m.matches(request)) {
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 }

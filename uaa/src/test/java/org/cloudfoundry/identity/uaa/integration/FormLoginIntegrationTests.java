@@ -33,64 +33,64 @@ import org.springframework.util.MultiValueMap;
  */
 public class FormLoginIntegrationTests {
 
-	@Rule
-	public ServerRunning serverRunning = ServerRunning.isRunning();
+    @Rule
+    public ServerRunning serverRunning = ServerRunning.isRunning();
 
-	private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
+    private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
 
-	@Rule
-	public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
+    @Rule
+    public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
 
-	@Test
-	public void testUnauthenticatedRedirect() throws Exception {
+    @Test
+    public void testUnauthenticatedRedirect() throws Exception {
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML, MediaType.ALL));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.TEXT_HTML, MediaType.ALL));
 
-		String location = "/";
-		ResponseEntity<Void> result = serverRunning.getForResponse(location, headers);
-		// should be directed to the login screen...
-		assertEquals(HttpStatus.FOUND, result.getStatusCode());
+        String location = "/";
+        ResponseEntity<Void> result = serverRunning.getForResponse(location, headers);
+        // should be directed to the login screen...
+        assertEquals(HttpStatus.FOUND, result.getStatusCode());
 
-		location = result.getHeaders().getLocation().toString();
-		assertTrue("Didn't get expected redirect: " + location, location.contains("/auth/identity"));
-	}
+        location = result.getHeaders().getLocation().toString();
+        assertTrue("Didn't get expected redirect: " + location, location.contains("/auth/identity"));
+    }
 
-	@Test
-	public void testSuccessfulAuthenticationFlow() throws Exception {
+    @Test
+    public void testSuccessfulAuthenticationFlow() throws Exception {
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML, MediaType.ALL));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.TEXT_HTML, MediaType.ALL));
 
-		String location = "/";
-		ResponseEntity<Void> result = serverRunning.getForResponse(location, headers);
-		// should be directed to the login screen...
-		assertEquals(HttpStatus.FOUND, result.getStatusCode());
+        String location = "/";
+        ResponseEntity<Void> result = serverRunning.getForResponse(location, headers);
+        // should be directed to the login screen...
+        assertEquals(HttpStatus.FOUND, result.getStatusCode());
 
-		location = result.getHeaders().getLocation().toString();
-		ResponseEntity<String> response = serverRunning.getForString(location, headers);
-		assertTrue(response.getBody().contains("/login.do"));
-		assertTrue(response.getBody().contains("auth_key"));
-		assertTrue(response.getBody().contains("password"));
+        location = result.getHeaders().getLocation().toString();
+        ResponseEntity<String> response = serverRunning.getForString(location, headers);
+        assertTrue(response.getBody().contains("/login.do"));
+        assertTrue(response.getBody().contains("auth_key"));
+        assertTrue(response.getBody().contains("password"));
 
-		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("auth_key", testAccounts.getUserName());
-		formData.add("password", testAccounts.getPassword());
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        formData.add("auth_key", testAccounts.getUserName());
+        formData.add("password", testAccounts.getPassword());
 
-		// Should be redirected to the original URL, but now authenticated
-		result = serverRunning.postForResponse("/login.do", headers, formData);
-		assertEquals(HttpStatus.FOUND, result.getStatusCode());
+        // Should be redirected to the original URL, but now authenticated
+        result = serverRunning.postForResponse("/login.do", headers, formData);
+        assertEquals(HttpStatus.FOUND, result.getStatusCode());
 
-		if (result.getHeaders().containsKey("Set-Cookie")) {
-			String cookie = result.getHeaders().getFirst("Set-Cookie");
-			headers.set("Cookie", cookie);
-		}
+        if (result.getHeaders().containsKey("Set-Cookie")) {
+            String cookie = result.getHeaders().getFirst("Set-Cookie");
+            headers.set("Cookie", cookie);
+        }
 
-		response = serverRunning.getForString(result.getHeaders().getLocation().toString(), headers);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		// The home page should be returned
-		assertTrue(response.getBody().contains("you have authenticated"));
+        response = serverRunning.getForString(result.getHeaders().getLocation().toString(), headers);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        // The home page should be returned
+        assertTrue(response.getBody().contains("you have authenticated"));
 
-	}
+    }
 
 }

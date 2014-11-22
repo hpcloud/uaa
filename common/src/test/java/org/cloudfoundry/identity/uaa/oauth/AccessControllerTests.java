@@ -35,36 +35,36 @@ import org.springframework.web.bind.support.SimpleSessionStatus;
  */
 public class AccessControllerTests {
 
-	private AccessController controller = new AccessController();
+    private AccessController controller = new AccessController();
 
-	@Test
-	public void testSunnyDay() throws Exception {
-		InMemoryClientDetailsService clientDetailsService = new InMemoryClientDetailsService();
-		clientDetailsService.setClientDetailsStore(Collections.singletonMap("client", new BaseClientDetails()));
-		controller.setClientDetailsService(clientDetailsService);
-		controller.setApprovalStore(Mockito.mock(ApprovalStore.class));
-		Authentication auth = UaaAuthenticationTestFactory.getAuthentication("foo@bar.com", "Foo Bar", "foo@bar.com");
-		String result = controller.confirm(new ModelMap(), new MockHttpServletRequest(), auth, new SimpleSessionStatus());
-		assertEquals("access_confirmation", result);
-	}
+    @Test
+    public void testSunnyDay() throws Exception {
+        InMemoryClientDetailsService clientDetailsService = new InMemoryClientDetailsService();
+        clientDetailsService.setClientDetailsStore(Collections.singletonMap("client", new BaseClientDetails()));
+        controller.setClientDetailsService(clientDetailsService);
+        controller.setApprovalStore(Mockito.mock(ApprovalStore.class));
+        Authentication auth = UaaAuthenticationTestFactory.getAuthentication("foo@bar.com", "Foo Bar", "foo@bar.com");
+        String result = controller.confirm(new ModelMap(), new MockHttpServletRequest(), auth, new SimpleSessionStatus());
+        assertEquals("access_confirmation", result);
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testSchemePreserved() throws Exception {
-		InMemoryClientDetailsService clientDetailsService = new InMemoryClientDetailsService();
-		clientDetailsService.setClientDetailsStore(Collections.singletonMap("client", new BaseClientDetails()));
-		controller.setClientDetailsService(clientDetailsService);
-		controller.setApprovalStore(Mockito.mock(ApprovalStore.class));
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setScheme("https");
-		request.addHeader("Host", "foo");
-		ModelMap model = new ModelMap();
-		model.put("authorizationRequest",new DefaultAuthorizationRequest("client", null));
-		Authentication auth = UaaAuthenticationTestFactory.getAuthentication("foo@bar.com", "Foo Bar", "foo@bar.com");
-		controller.confirm(model, request, auth, new SimpleSessionStatus());
-		Map<String, Object> options = (Map<String, Object>) ((Map<String, Object>) model.get("options")).get("confirm");
-		assertEquals("https://foo/oauth/authorize", options.get("location"));
-		assertEquals("/oauth/authorize", options.get("path"));
-	}
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSchemePreserved() throws Exception {
+        InMemoryClientDetailsService clientDetailsService = new InMemoryClientDetailsService();
+        clientDetailsService.setClientDetailsStore(Collections.singletonMap("client", new BaseClientDetails()));
+        controller.setClientDetailsService(clientDetailsService);
+        controller.setApprovalStore(Mockito.mock(ApprovalStore.class));
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setScheme("https");
+        request.addHeader("Host", "foo");
+        ModelMap model = new ModelMap();
+        model.put("authorizationRequest",new DefaultAuthorizationRequest("client", null));
+        Authentication auth = UaaAuthenticationTestFactory.getAuthentication("foo@bar.com", "Foo Bar", "foo@bar.com");
+        controller.confirm(model, request, auth, new SimpleSessionStatus());
+        Map<String, Object> options = (Map<String, Object>) ((Map<String, Object>) model.get("options")).get("confirm");
+        assertEquals("https://foo/oauth/authorize", options.get("location"));
+        assertEquals("/oauth/authorize", options.get("path"));
+    }
 
 }

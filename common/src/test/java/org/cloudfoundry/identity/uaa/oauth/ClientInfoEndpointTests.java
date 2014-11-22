@@ -31,26 +31,26 @@ import org.springframework.security.oauth2.provider.ClientDetailsService;
  *
  */
 public class ClientInfoEndpointTests {
-	
-	private ClientInfoEndpoint endpoint = new ClientInfoEndpoint();
-	
-	private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
-	
-	private BaseClientDetails foo = new BaseClientDetails("foo", "none", "read,write", "authorization_code", "uaa.none");
+    
+    private ClientInfoEndpoint endpoint = new ClientInfoEndpoint();
+    
+    private ClientDetailsService clientDetailsService = Mockito.mock(ClientDetailsService.class);
+    
+    private BaseClientDetails foo = new BaseClientDetails("foo", "none", "read,write", "authorization_code", "uaa.none");
 
-	{
-		foo.setClientSecret("bar");
-		foo.setAdditionalInformation(Collections.singletonMap("key", "value"));
-		endpoint.setClientDetailsService(clientDetailsService);
-	}
-	
-	@Test
-	public void testClientinfo() {
-		Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenReturn(foo);
-		ClientDetails client = endpoint.clientinfo(new UsernamePasswordAuthenticationToken("foo", "<NONE>"));
-		assertEquals("foo", client.getClientId());
-		assertNull(client.getClientSecret());
-		assertTrue(client.getAdditionalInformation().isEmpty());
-	}
+    {
+        foo.setClientSecret("bar");
+        foo.setAdditionalInformation(Collections.singletonMap("key", "value"));
+        endpoint.setClientDetailsService(clientDetailsService);
+    }
+    
+    @Test
+    public void testClientinfo() {
+        Mockito.when(clientDetailsService.loadClientByClientId("foo")).thenReturn(foo);
+        ClientDetails client = endpoint.clientinfo(new UsernamePasswordAuthenticationToken("foo", "<NONE>"));
+        assertEquals("foo", client.getClientId());
+        assertNull(client.getClientSecret());
+        assertTrue(client.getAdditionalInformation().isEmpty());
+    }
 
 }

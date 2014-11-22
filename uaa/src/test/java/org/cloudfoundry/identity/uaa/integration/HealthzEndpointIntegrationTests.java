@@ -26,22 +26,22 @@ import org.springframework.http.ResponseEntity;
  */
 public class HealthzEndpointIntegrationTests {
 
-	@Rule
-	public ServerRunning serverRunning = ServerRunning.isRunning();
+    @Rule
+    public ServerRunning serverRunning = ServerRunning.isRunning();
 
-	/**
-	 * tests a happy-day flow of the <code>/healthz</code> endpoint
-	 */
-	@Test
-	public void testHappyDay() throws Exception {
+    /**
+     * tests a happy-day flow of the <code>/healthz</code> endpoint
+     */
+    @Test
+    public void testHappyDay() throws Exception {
 
-		HttpHeaders headers = new HttpHeaders();
-		ResponseEntity<String> response = serverRunning.getForString("/healthz/", headers);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
+        HttpHeaders headers = new HttpHeaders();
+        ResponseEntity<String> response = serverRunning.getForString("/healthz/", headers);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
 
-		String body = response.getBody();
-		assertTrue(body.contains("ok"));
+        String body = response.getBody();
+        assertTrue(body.contains("ok"));
 
-	}
+    }
 
 }

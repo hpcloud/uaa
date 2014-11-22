@@ -24,34 +24,34 @@ import javax.sql.DataSource;
  */
 public class JdbcFailedLoginCountingAuditService extends JdbcAuditService {
 
-	private int saveDataPeriodMillis = 2 * 3600 * 1000; // 2hr
+    private int saveDataPeriodMillis = 2 * 3600 * 1000; // 2hr
 
-	public JdbcFailedLoginCountingAuditService(DataSource dataSource) {
-		super(dataSource);
-	}
+    public JdbcFailedLoginCountingAuditService(DataSource dataSource) {
+        super(dataSource);
+    }
 
-	/**
-	 * @param saveDataPeriodMillis the period in milliseconds to set
-	 */
-	public void setSaveDataPeriodMillis(int saveDataPeriodMillis) {
-		this.saveDataPeriodMillis = saveDataPeriodMillis;
-	}
-	
-	@Override
-	public void log(AuditEvent auditEvent) {
-		switch (auditEvent.getType()) {
-		case UserAuthenticationSuccess:
-		case PasswordChangeSuccess:
-			getJdbcTemplate().update("delete from sec_audit where principal_id=?", auditEvent.getPrincipalId());
-			break;
-		case UserAuthenticationFailure:
-			getJdbcTemplate().update("delete from sec_audit where created < ?", new Timestamp(System.currentTimeMillis()
-					- saveDataPeriodMillis));
-			super.log(auditEvent);
-			break;
-		default:
-			break;
-		}
-	}
+    /**
+     * @param saveDataPeriodMillis the period in milliseconds to set
+     */
+    public void setSaveDataPeriodMillis(int saveDataPeriodMillis) {
+        this.saveDataPeriodMillis = saveDataPeriodMillis;
+    }
+    
+    @Override
+    public void log(AuditEvent auditEvent) {
+        switch (auditEvent.getType()) {
+        case UserAuthenticationSuccess:
+        case PasswordChangeSuccess:
+            getJdbcTemplate().update("delete from sec_audit where principal_id=?", auditEvent.getPrincipalId());
+            break;
+        case UserAuthenticationFailure:
+            getJdbcTemplate().update("delete from sec_audit where created < ?", new Timestamp(System.currentTimeMillis()
+                    - saveDataPeriodMillis));
+            super.log(auditEvent);
+            break;
+        default:
+            break;
+        }
+    }
 
 }

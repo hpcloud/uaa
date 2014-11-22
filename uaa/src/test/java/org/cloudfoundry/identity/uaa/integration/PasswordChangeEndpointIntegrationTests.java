@@ -47,150 +47,150 @@ import org.springframework.web.client.RestOperations;
  */
 public class PasswordChangeEndpointIntegrationTests {
 
-	private final String JOE = "joe_" + new RandomValueStringGenerator().generate().toLowerCase();
-	private final String BOB = "bob_" + new RandomValueStringGenerator().generate().toLowerCase();
+    private final String JOE = "joe_" + new RandomValueStringGenerator().generate().toLowerCase();
+    private final String BOB = "bob_" + new RandomValueStringGenerator().generate().toLowerCase();
 
-	private final String userEndpoint = "/Users";
+    private final String userEndpoint = "/Users";
 
-	@Rule
-	public ServerRunning serverRunning = ServerRunning.isRunning();
+    @Rule
+    public ServerRunning serverRunning = ServerRunning.isRunning();
 
-	private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
+    private UaaTestAccounts testAccounts = UaaTestAccounts.standard(serverRunning);
 
-	@Rule
-	public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
+    @Rule
+    public TestAccountSetup testAccountSetup = TestAccountSetup.standard(serverRunning, testAccounts);
 
-	@Rule
-	public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
+    @Rule
+    public OAuth2ContextSetup context = OAuth2ContextSetup.withTestAccounts(serverRunning, testAccounts);
 
-	private RestOperations client;
+    private RestOperations client;
 
-	private ScimUser joe;
-	private ScimUser bob;
+    private ScimUser joe;
+    private ScimUser bob;
 
-	private ResponseEntity<ScimUser> createUser(String username, String firstName, String lastName, String email) {
-		ScimUser user = new ScimUser();
-		user.setUserName(username);
-		user.setName(new ScimUser.Name(firstName, lastName));
-		user.addEmail(email);
-		user.setPassword("password");
-		return client.postForEntity(serverRunning.getUrl(userEndpoint), user, ScimUser.class);
-	}
+    private ResponseEntity<ScimUser> createUser(String username, String firstName, String lastName, String email) {
+        ScimUser user = new ScimUser();
+        user.setUserName(username);
+        user.setName(new ScimUser.Name(firstName, lastName));
+        user.addEmail(email);
+        user.setPassword("password");
+        return client.postForEntity(serverRunning.getUrl(userEndpoint), user, ScimUser.class);
+    }
 
-	@Before
-	public void createRestTemplate() throws Exception {
-		// Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
-		client = serverRunning.getRestTemplate();
-	}
+    @Before
+    public void createRestTemplate() throws Exception {
+        // Assume.assumeTrue(!testAccounts.isProfileActive("vcap"));
+        client = serverRunning.getRestTemplate();
+    }
 
-	@BeforeOAuth2Context
-	@OAuth2ContextConfiguration(OAuth2ContextConfiguration.ClientCredentials.class)
-	public void createAccount() throws Exception {
-		client = serverRunning.getRestTemplate();
-		ResponseEntity<ScimUser> response = createUser(JOE, "Joe", "User", "joe@blah.com");
-		joe = response.getBody();
-		assertEquals(JOE, joe.getUserName());
-		response = createUser(BOB, "Bob", "User", "bob@blah.com");
-		bob = response.getBody();
-		assertEquals(BOB, bob.getUserName());
-	}
+    @BeforeOAuth2Context
+    @OAuth2ContextConfiguration(OAuth2ContextConfiguration.ClientCredentials.class)
+    public void createAccount() throws Exception {
+        client = serverRunning.getRestTemplate();
+        ResponseEntity<ScimUser> response = createUser(JOE, "Joe", "User", "joe@blah.com");
+        joe = response.getBody();
+        assertEquals(JOE, joe.getUserName());
+        response = createUser(BOB, "Bob", "User", "bob@blah.com");
+        bob = response.getBody();
+        assertEquals(BOB, bob.getUserName());
+    }
 
-	private String implicitUrl() {
-		URI uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "token")
-				.queryParam("client_id", "vmc").queryParam("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc")
-				.queryParam("scope", "cloud_controller.read").build();
-		return uri.toString();
-	}
+    private String implicitUrl() {
+        URI uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "token")
+                .queryParam("client_id", "vmc").queryParam("redirect_uri", "https://uaa.cloudfoundry.com/redirect/vmc")
+                .queryParam("scope", "cloud_controller.read").build();
+        return uri.toString();
+    }
 
-	// XXX I (aocole) believe this test is incorrect. This allows a client with the password.change scope
-	// change any user's password, even without uaa.admin scope. This contradicts docs at:
-	// https://github.com/cloudfoundry/uaa/blob/master/docs/UAA-Security.md#password-change
-	@Test
-	@OAuth2ContextConfiguration(OAuth2ContextConfiguration.ClientCredentials.class)
-	public void testChangePasswordSucceeds() throws Exception {
-		PasswordChangeRequest change = new PasswordChangeRequest();
-		change.setPassword("newpassword");
+    // XXX I (aocole) believe this test is incorrect. This allows a client with the password.change scope
+    // change any user's password, even without uaa.admin scope. This contradicts docs at:
+    // https://github.com/cloudfoundry/uaa/blob/master/docs/UAA-Security.md#password-change
+    @Test
+    @OAuth2ContextConfiguration(OAuth2ContextConfiguration.ClientCredentials.class)
+    public void testChangePasswordSucceeds() throws Exception {
+        PasswordChangeRequest change = new PasswordChangeRequest();
+        change.setPassword("newpassword");
 
-		HttpHeaders headers = new HttpHeaders();
-		ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
-				HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
-		assertEquals(HttpStatus.OK, result.getStatusCode());
+        HttpHeaders headers = new HttpHeaders();
+        ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
+                HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
+        assertEquals(HttpStatus.OK, result.getStatusCode());
 
-	}
+    }
 
-	@Test
-	@OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
-	public void testUserChangesOwnPassword() throws Exception {
+    @Test
+    @OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
+    public void testUserChangesOwnPassword() throws Exception {
 
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
-		parameters.set("source", "credentials");
-		parameters.set("username", joe.getUserName());
-		parameters.set("password", "password");
-		context.getAccessTokenRequest().putAll(parameters);
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+        parameters.set("source", "credentials");
+        parameters.set("username", joe.getUserName());
+        parameters.set("password", "password");
+        context.getAccessTokenRequest().putAll(parameters);
 
-		PasswordChangeRequest change = new PasswordChangeRequest();
-		change.setOldPassword("password");
-		change.setPassword("newpassword");
+        PasswordChangeRequest change = new PasswordChangeRequest();
+        change.setOldPassword("password");
+        change.setPassword("newpassword");
 
-		HttpHeaders headers = new HttpHeaders();
-		ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
-				HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
-		assertEquals(HttpStatus.OK, result.getStatusCode());
+        HttpHeaders headers = new HttpHeaders();
+        ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
+                HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
+        assertEquals(HttpStatus.OK, result.getStatusCode());
 
-		// Now try logging in with the new credentials
-		headers = new HttpHeaders();
-		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        // Now try logging in with the new credentials
+        headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
-		String credentials = String.format("{ \"username\":\"%s\", \"password\":\"%s\" }", joe.getUserName(),
-				"newpassword");
+        String credentials = String.format("{ \"username\":\"%s\", \"password\":\"%s\" }", joe.getUserName(),
+                "newpassword");
 
-		MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
-		formData.add("credentials", credentials);
-		result = serverRunning.postForResponse(implicitUrl(), headers, formData);
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<String, String>();
+        formData.add("credentials", credentials);
+        result = serverRunning.postForResponse(implicitUrl(), headers, formData);
 
-		assertNotNull(result.getHeaders().getLocation());
-		assertTrue(result.getHeaders().getLocation().toString()
-				.matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
-	}
+        assertNotNull(result.getHeaders().getLocation());
+        assertTrue(result.getHeaders().getLocation().toString()
+                .matches("https://uaa.cloudfoundry.com/redirect/vmc#access_token=.+"));
+    }
 
-	@Test
-	@OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
-	public void testUserChangesOthersPasswordFails() throws Exception {
+    @Test
+    @OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
+    public void testUserChangesOthersPasswordFails() throws Exception {
 
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
-		parameters.set("source", "credentials");
-		parameters.set("username", joe.getUserName());
-		parameters.set("password", "password");
-		context.getAccessTokenRequest().putAll(parameters);
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+        parameters.set("source", "credentials");
+        parameters.set("username", joe.getUserName());
+        parameters.set("password", "password");
+        context.getAccessTokenRequest().putAll(parameters);
 
-		PasswordChangeRequest change = new PasswordChangeRequest();
-		change.setPassword("newpassword");
+        PasswordChangeRequest change = new PasswordChangeRequest();
+        change.setPassword("newpassword");
 
-		HttpHeaders headers = new HttpHeaders();
-		ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
-				HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, bob.getId());
-		assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
+        HttpHeaders headers = new HttpHeaders();
+        ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
+                HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, bob.getId());
+        assertEquals(HttpStatus.FORBIDDEN, result.getStatusCode());
 
-	}
+    }
 
-	@Test
-	@OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
-	public void testUserMustSupplyOldPassword() throws Exception {
+    @Test
+    @OAuth2ContextConfiguration(resource=OAuth2ContextConfiguration.Implicit.class, initialize=false)
+    public void testUserMustSupplyOldPassword() throws Exception {
 
-		MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
-		parameters.set("source", "credentials");
-		parameters.set("username", joe.getUserName());
-		parameters.set("password", "password");
-		context.getAccessTokenRequest().putAll(parameters);
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+        parameters.set("source", "credentials");
+        parameters.set("username", joe.getUserName());
+        parameters.set("password", "password");
+        context.getAccessTokenRequest().putAll(parameters);
 
-		PasswordChangeRequest change = new PasswordChangeRequest();
-		change.setPassword("newpassword");
+        PasswordChangeRequest change = new PasswordChangeRequest();
+        change.setPassword("newpassword");
 
-		HttpHeaders headers = new HttpHeaders();
-		ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
-				HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
-		assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        HttpHeaders headers = new HttpHeaders();
+        ResponseEntity<Void> result = client.exchange(serverRunning.getUrl(userEndpoint) + "/{id}/password",
+                HttpMethod.PUT, new HttpEntity<PasswordChangeRequest>(change, headers), null, joe.getId());
+        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
-	}
+    }
 
 }

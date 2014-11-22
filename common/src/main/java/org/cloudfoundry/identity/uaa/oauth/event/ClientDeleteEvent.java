@@ -25,14 +25,14 @@ import org.springframework.security.oauth2.provider.ClientDetails;
  */
 public class ClientDeleteEvent extends AbstractClientAdminEvent {
 
-	public ClientDeleteEvent(ClientDetails client, Principal principal) {
-		super(client, principal);
-	}
+    public ClientDeleteEvent(ClientDetails client, Principal principal) {
+        super(client, principal);
+    }
 
-	@Override
-	public AuditEvent getAuditEvent() {
-		return createAuditRecord(getClient().getClientId(), AuditEventType.ClientDeleteSuccess,
-				getOrigin(getPrincipal()));
-	}
+    @Override
+    public AuditEvent getAuditEvent() {
+        return createAuditRecord(getClient().getClientId(), AuditEventType.ClientDeleteSuccess,
+                getOrigin(getPrincipal()));
+    }
 
 }

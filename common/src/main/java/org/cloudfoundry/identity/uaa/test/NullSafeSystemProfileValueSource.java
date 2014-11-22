@@ -24,10 +24,10 @@ import org.springframework.util.Assert;
  */
 public class NullSafeSystemProfileValueSource implements ProfileValueSource {
 
-	@Override
-	public String get(String key) {
-		Assert.hasText(key, "'key' must not be empty");
-		return System.getProperty(key, "");
-	}
+    @Override
+    public String get(String key) {
+        Assert.hasText(key, "'key' must not be empty");
+        return System.getProperty(key, "");
+    }
 
 }

@@ -20,16 +20,16 @@ import org.cloudfoundry.identity.uaa.authentication.UaaAuthenticationDetails;
  */
 abstract class AbstractUaaPrincipalEvent extends AbstractUaaEvent {
 
-	AbstractUaaPrincipalEvent(UaaAuthenticationDetails details) {
-		super(details);
-	}
+    AbstractUaaPrincipalEvent(UaaAuthenticationDetails details) {
+        super(details);
+    }
 
-	protected String getOrigin(UaaAuthenticationDetails details) {
-		return details == null ? "unknown" : details.getOrigin();
-	}
+    protected String getOrigin(UaaAuthenticationDetails details) {
+        return details == null ? "unknown" : details.getOrigin();
+    }
 
-	UaaAuthenticationDetails getAuthenticationDetails() {
-		return (UaaAuthenticationDetails)source;
-	}
+    UaaAuthenticationDetails getAuthenticationDetails() {
+        return (UaaAuthenticationDetails)source;
+    }
 
 }
