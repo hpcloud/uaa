@@ -22,6 +22,9 @@
 
     <http name="clientAdminSecurity" pattern="/oauth/clients/**" create-session="stateless" entry-point-ref="oauthAuthenticationEntryPoint"
         use-expressions="true" authentication-manager-ref="emptyAuthenticationManager" xmlns="http://www.springframework.org/schema/security">
+        <intercept-url pattern="/tx/**" access="#oauth2.hasScope('clients.admin')" method="DELETE" />
+        <intercept-url pattern="/tx/**" access="#oauth2.hasScope('clients.admin')" method="POST" />
+        <intercept-url pattern="/tx/**" access="#oauth2.hasScope('clients.admin')" method="PUT" />
         <intercept-url pattern="/**" access="#oauth2.hasScope('clients.write')" method="DELETE" />
         <intercept-url pattern="/**" access="#oauth2.hasScope('clients.write')" method="POST" />
         <intercept-url pattern="/**" access="#oauth2.hasScope('clients.write')" method="PUT" />
