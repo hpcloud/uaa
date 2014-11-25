@@ -21,7 +21,9 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.cloudfoundry.identity.uaa.error.UaaException;
+import org.cloudfoundry.identity.uaa.oauth.InvalidClientDetailsException;
 import org.cloudfoundry.identity.uaa.oauth.SecretChangeRequest;
+import org.cloudfoundry.identity.uaa.oauth.client.ClientDetailsModification;
 import org.cloudfoundry.identity.uaa.test.TestAccountSetup;
 import org.cloudfoundry.identity.uaa.test.UaaTestAccounts;
 import org.junit.Assume;
@@ -40,8 +42,15 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 import org.springframework.security.oauth2.provider.BaseClientDetails;
+import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+// import static junit.framework.Assert.assertEquals;
+// import static junit.framework.Assert.assertFalse;
+// import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Dave Syer
@@ -90,6 +99,34 @@ public class ClientAdminEndpointsIntegrationTests {
         createClient("client_credentials");
     }
 
+    public BaseClientDetails[] doCreateClients() throws Exception {
+        headers = getAuthenticatedHeaders(getClientCredentialsAccessToken("clients.read clients.write clients.secret"));
+        headers.add("Accept", "application/json");
+        String grantTypes = "client_credentials";
+        RandomValueStringGenerator gen =  new RandomValueStringGenerator();
+        String[] ids = new String[5];
+        BaseClientDetails[] clients = new BaseClientDetails[ids.length];
+        for (int i=0; i<ids.length; i++) {
+            ids[i] = gen.generate();
+            clients[i] = new BaseClientDetails(ids[i], "", "foo,bar",grantTypes, "uaa.none");
+            clients[i].setClientSecret("secret");
+            clients[i].setAdditionalInformation(Collections.<String, Object> singletonMap("foo", Arrays.asList("bar")));
+        }
+        ResponseEntity<BaseClientDetails[]> result =
+            serverRunning.getRestTemplate().exchange(
+                serverRunning.getUrl("/oauth/clients/tx"),
+                HttpMethod.POST,
+                new HttpEntity<BaseClientDetails[]>(clients, headers),
+                BaseClientDetails[].class);
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        validateClients(clients, result.getBody());
+        for (int i=0; i<ids.length; i++) {
+            ClientDetails client = getClient(ids[i]);
+            assertNotNull(client);
+        }
+        return result.getBody();
+    }
+
     @Test
     public void nonImplicitGrantClientWithoutSecretIsRejected() throws Exception {
         OAuth2AccessToken token = getClientCredentialsAccessToken("clients.read clients.write");
@@ -127,7 +164,7 @@ public class ClientAdminEndpointsIntegrationTests {
     ResponseEntity<Void> result = serverRunning.getRestTemplate().exchange(serverRunning.getUrl("/oauth/clients"),
         HttpMethod.POST, new HttpEntity<BaseClientDetails>(client, headers), Void.class);
 
-    assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
     }
 
     @Test
@@ -141,11 +178,11 @@ public class ClientAdminEndpointsIntegrationTests {
 
     @Test
     public void passwordGrantAutomaticallyAddsRefreshToken() throws Exception {
-    BaseClientDetails client = createClient("password");
+        BaseClientDetails client = createClient("password");
 
-    ResponseEntity<String> result = serverRunning.getForString("/oauth/clients/" + client.getClientId(), headers);
-    assertEquals(HttpStatus.OK, result.getStatusCode());
-    assertTrue(result.getBody().contains("\"authorized_grant_types\":[\"password\",\"refresh_token\"]"));
+        ResponseEntity<String> result = serverRunning.getForString("/oauth/clients/" + client.getClientId(), headers);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertTrue(result.getBody().contains("\"authorized_grant_types\":[\"password\",\"refresh_token\"]"));
     }
 
     @Test
@@ -215,6 +252,45 @@ public class ClientAdminEndpointsIntegrationTests {
         assertEquals("invalid_client", map.get("error"));
     }
 
+    @Test
+    public void testAddUpdateAndDeleteTx() throws Exception {
+        BaseClientDetails[] clients = doCreateClients();
+        for (int i=1; i<clients.length; i++) {
+            clients[i] = new ClientDetailsModification(clients[i]);
+            clients[i].setRefreshTokenValiditySeconds(120);
+            ((ClientDetailsModification)clients[i]).setAction(ClientDetailsModification.UPDATE);
+        }
+        clients[0].setClientId(new RandomValueStringGenerator().generate());
+        clients[0].setRefreshTokenValiditySeconds(60);
+        ((ClientDetailsModification)clients[0]).setAction(ClientDetailsModification.ADD);
+
+        clients[0].setClientId(new RandomValueStringGenerator().generate());
+        ((ClientDetailsModification)clients[clients.length-1]).setAction(ClientDetailsModification.DELETE);
+
+
+        headers = getAuthenticatedHeaders(getClientCredentialsAccessToken("clients.read clients.write clients.secret"));
+        headers.add("Accept", "application/json");
+        String oldId = clients[clients.length-1].getClientId();
+        clients[clients.length-1].setClientId("unknown.id");
+        ResponseEntity<BaseClientDetails[]> result =
+                serverRunning.getRestTemplate().exchange(
+                        serverRunning.getUrl("/oauth/clients/tx/modify"),
+                        HttpMethod.POST,
+                        new HttpEntity<BaseClientDetails[]>(clients, headers),
+                        BaseClientDetails[].class);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        //set the deleted client ID so we can verify it is gone.
+        clients[clients.length-1].setClientId(oldId);
+        for (int i=0; i<clients.length; i++) {
+            ClientDetails client = getClient(clients[i].getClientId());
+            if (i==(clients.length-1)) {
+                assertNull(client);
+            } else {
+                assertNotNull(client);
+            }
+        }
+    }
+
     private BaseClientDetails createClient(String grantTypes) throws Exception {
         BaseClientDetails client = new BaseClientDetails(new RandomValueStringGenerator().generate(), "", "foo,bar", grantTypes, "uaa.none");
         client.setClientSecret("secret");
@@ -256,6 +332,38 @@ public class ClientAdminEndpointsIntegrationTests {
         OAuth2AccessToken accessToken = DefaultOAuth2AccessToken.valueOf(response.getBody());
         return accessToken;
 
+    }
+
+    public ClientDetails getClient(String id) throws Exception {
+        HttpHeaders headers = getAuthenticatedHeaders(getClientCredentialsAccessToken("clients.read"));
+        ResponseEntity<BaseClientDetails> result =
+                serverRunning.getRestTemplate().exchange(
+                        serverRunning.getUrl("/oauth/clients/"+id),
+                        HttpMethod.GET,
+                        new HttpEntity<Void>(null, headers),
+                        BaseClientDetails.class);
+
+
+        if (result.getStatusCode()==HttpStatus.NOT_FOUND) {
+            return null;
+        } else if (result.getStatusCode()==HttpStatus.OK) {
+            return result.getBody();
+        } else {
+            throw new InvalidClientDetailsException("Unknown status code:"+result.getStatusCode());
+        }
+
+    }
+
+    public boolean validateClients(BaseClientDetails[] expected, BaseClientDetails[] actual) {
+        assertNotNull(expected);
+        assertNotNull(actual);
+        assertEquals(expected.length, actual.length);
+        for (int i=0; i<expected.length; i++) {
+            assertNotNull(expected[i]);
+            assertNotNull(actual[i]);
+            assertEquals(expected[i].getClientId(), actual[i].getClientId());
+        }
+        return true;
     }
 
 }
