@@ -33,7 +33,7 @@
             <properties>
                 <CLOUD_FOUNDRY_CONFIG_PATH>${project.basedir}/src/test/resources/test/profiles/aok</CLOUD_FOUNDRY_CONFIG_PATH>
 
-                <test-includes>**/integration/**.java</test-includes>
+                <test-includes>**/integration/ClientAdminEndpointsIntegrationTests.java</test-includes>
 
 <!-- Use these lines for running individual test files. First line is for all tests:
                 <test-includes>**/integration/**.java</test-includes>
