@@ -260,18 +260,19 @@ public class ClientAdminEndpointsIntegrationTests {
             clients[i].setRefreshTokenValiditySeconds(120);
             ((ClientDetailsModification)clients[i]).setAction(ClientDetailsModification.UPDATE);
         }
+        clients[0] = new ClientDetailsModification(clients[0]);
         clients[0].setClientId(new RandomValueStringGenerator().generate());
         clients[0].setRefreshTokenValiditySeconds(60);
+        clients[0].setClientSecret("secret");
         ((ClientDetailsModification)clients[0]).setAction(ClientDetailsModification.ADD);
 
-        clients[0].setClientId(new RandomValueStringGenerator().generate());
+        clients[clients.length-1] = new ClientDetailsModification(clients[clients.length-1]);
         ((ClientDetailsModification)clients[clients.length-1]).setAction(ClientDetailsModification.DELETE);
 
 
         headers = getAuthenticatedHeaders(getClientCredentialsAccessToken("clients.read clients.write clients.secret"));
         headers.add("Accept", "application/json");
         String oldId = clients[clients.length-1].getClientId();
-        clients[clients.length-1].setClientId("unknown.id");
         ResponseEntity<BaseClientDetails[]> result =
                 serverRunning.getRestTemplate().exchange(
                         serverRunning.getUrl("/oauth/clients/tx/modify"),
